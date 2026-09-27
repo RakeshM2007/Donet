@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications - Donation Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-brand">
+          <div class="sidebar-brand-icon">🤝</div>
+          <span>DonationCare</span>
+        </a>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+          <img class="current-user-avatar" src="" alt="User Avatar">
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name current-user-name">Loading...</div>
+          <div class="current-user-role badge badge-role-donor">ROLE</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+
+      <div class="sidebar-footer">
+        <a href="javascript:void(0)" onclick="logoutUser()" class="nav-item" style="color: var(--danger);">
+          <span class="nav-item-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle-btn" title="Toggle Sidebar">☰</button>
+          <div class="page-heading">
+            <h1>Notifications Center</h1>
+            <p>Real-time alerts, matching updates, request statuses, and messages</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button class="topbar-action-btn theme-toggle-btn" title="Switch Theme">🌙</button>
+
+          <div style="position: relative;">
+            <button class="topbar-action-btn" id="notif-bell-btn" title="Notifications">
+              <span>🔔</span>
+              <span class="notification-count hidden">0</span>
+            </button>
+            <div class="dropdown-menu" id="notif-dropdown">
+              <div class="dropdown-header">
+                <span>Notifications</span>
+                <a href="javascript:void(0)" onclick="markAllNotificationsAsRead()" class="text-xs" style="color: var(--primary);">Mark all read</a>
+              </div>
+              <div class="dropdown-list" id="notif-dropdown-list"></div>
+              <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+                <a href="notifications.html" class="text-xs font-semibold">View All Notifications →</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="avatar-preview" style="width: 38px; height: 38px; border-width: 2px;">
+            <img class="current-user-avatar" src="" alt="Avatar">
+          </div>
+        </div>
+      </header>
+
+      <main class="app-content">
+
+        <!-- Notification Controls Bar -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <div class="card-body flex items-center justify-between flex-wrap gap-4">
+            <div class="flex gap-2">
+              <button type="button" class="btn btn-primary btn-sm notif-filter-btn" data-filter="all">All Alerts</button>
+              <button type="button" class="btn btn-secondary btn-sm notif-filter-btn" data-filter="unread">Unread Only</button>
+            </div>
+            <div class="flex gap-2">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-mark-all-read">
+                ✓ Mark All As Read
+              </button>
+              <button type="button" class="btn btn-outline-danger btn-sm" id="btn-clear-all-notifs">
+                🗑️ Clear All
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications List Container -->
+        <div class="card">
+          <div class="card-body" style="padding: 0;">
+            <div id="notifications-list" style="display: flex; flex-direction: column;">
+              <!-- Dynamically populated notifications -->
+            </div>
+
+            <div id="notifs-empty-view" class="text-center" style="padding: 3rem 1.5rem; display: none;">
+              <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔔</div>
+              <h4 style="font-weight: 700; margin-bottom: 0.25rem;">You're All Caught Up!</h4>
+              <p class="text-sm text-muted">No alerts or notifications at this moment.</p>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    let activeFilter = 'all';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = checkAuth();
+      if (!user) return;
+
+      renderAppChrome('notifications');
+
+      // Notification toggle
+      const notifBell = document.getElementById('notif-bell-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', () => notifDropdown.classList.remove('show'));
+
+      renderNotifications();
+
+      // Filters
+      document.querySelectorAll('.notif-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.notif-filter-btn').forEach(b => {
+            b.classList.remove('btn-primary');
+            b.classList.add('btn-secondary');
+          });
+          btn.classList.remove('btn-secondary');
+          btn.classList.add('btn-primary');
+          activeFilter = btn.getAttribute('data-filter');
+          renderNotifications();
+        });
+      });
+
+      // Mark all read
+      document.getElementById('btn-mark-all-read').addEventListener('click', () => {
+        markAllNotificationsAsRead();
+        renderNotifications();
+      });
+
+      // Clear all
+      document.getElementById('btn-clear-all-notifs').addEventListener('click', () => {
+        if (confirm('Clear all your notifications?')) {
+          const notifications = getData(STORAGE_KEYS.NOTIFICATIONS, []);
+          const kept = notifications.filter(n => n.recipientId !== user.id);
+          saveData(STORAGE_KEYS.NOTIFICATIONS, kept);
+          showToast('Notifications cleared.', 'info');
+          renderNotifications();
+          updateNotificationBadge();
+        }
+      });
+    });
+
+    function renderNotifications() {
+      const user = getCurrentUser();
+      const allNotifs = getData(STORAGE_KEYS.NOTIFICATIONS, []);
+      const userNotifs = allNotifs.filter(n => n.recipientId === user.id);
+
+      const filtered = userNotifs.filter(n => {
+        if (activeFilter === 'unread') return !n.read;
+        return true;
+      });
+
+      const listContainer = document.getElementById('notifications-list');
+      const emptyView = document.getElementById('notifs-empty-view');
+
+      if (filtered.length === 0) {
+        listContainer.innerHTML = '';
+        emptyView.style.display = 'block';
+        return;
+      }
+
+      emptyView.style.display = 'none';
+      listContainer.innerHTML = filtered.map(n => {
+        let icon = '🔔';
+        if (n.type === 'success') icon = '✅';
+        else if (n.type === 'warning') icon = '⚠️';
+        else if (n.type === 'error') icon = '⛔';
+
+        return `
+          <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; background-color: ${n.read ? 'transparent' : 'var(--primary-light)'}; transition: var(--transition);">
+            <div class="flex items-start gap-3">
+              <span style="font-size: 1.5rem;">${icon}</span>
+              <div>
+                <div style="font-weight: 700; color: var(--text-main); font-size: 0.95rem;">
+                  ${n.title}
+                  ${!n.read ? '<span class="badge badge-pending" style="font-size: 0.65rem; margin-left: 6px;">NEW</span>' : ''}
+                </div>
+                <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 2px;">
+                  ${n.message}
+                </div>
+                <div class="text-xs text-light" style="margin-top: 4px;">
+                  ${formatDate(n.createdAt)} • ${new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              ${n.link && n.link !== '#' ? `
+                <a href="${n.link}" onclick="handleNotifClick('${n.id}', '${n.link}')" class="btn btn-secondary btn-sm">
+                  View Details →
+                </a>
+              ` : ''}
+              ${!n.read ? `
+                <button type="button" onclick="markOneAsRead('${n.id}')" class="btn btn-secondary btn-sm" title="Mark Read">
+                  ✓
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function markOneAsRead(notifId) {
+      const notifications = getData(STORAGE_KEYS.NOTIFICATIONS, []);
+      const n = notifications.find(item => item.id === notifId);
+      if (n) {
+        n.read = true;
+        saveData(STORAGE_KEYS.NOTIFICATIONS, notifications);
+        renderNotifications();
+        updateNotificationBadge();
+      }
+    }
+  </script>
+</body>
+</html>

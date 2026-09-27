@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Request Donation - Donation Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="donee-dashboard.html" class="sidebar-brand">
+          <div class="sidebar-brand-icon">🤝</div>
+          <span>DonationCare</span>
+        </a>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+          <img class="current-user-avatar" src="" alt="User Avatar">
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name current-user-name">Loading...</div>
+          <div class="current-user-role badge badge-role-donee">DONEE</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+
+      <div class="sidebar-footer">
+        <a href="javascript:void(0)" onclick="logoutUser()" class="nav-item" style="color: var(--danger);">
+          <span class="nav-item-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle-btn" title="Toggle Sidebar">☰</button>
+          <div class="page-heading">
+            <h1>Create Donation Request</h1>
+            <p>Tell our donor community what items or assistance you need</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <a href="requests.html" class="btn btn-secondary btn-sm">My Requests</a>
+          <button class="topbar-action-btn theme-toggle-btn" title="Switch Theme">🌙</button>
+
+          <div style="position: relative;">
+            <button class="topbar-action-btn" id="notif-bell-btn" title="Notifications">
+              <span>🔔</span>
+              <span class="notification-count hidden">0</span>
+            </button>
+            <div class="dropdown-menu" id="notif-dropdown">
+              <div class="dropdown-header">
+                <span>Notifications</span>
+                <a href="javascript:void(0)" onclick="markAllNotificationsAsRead()" class="text-xs" style="color: var(--primary);">Mark all read</a>
+              </div>
+              <div class="dropdown-list" id="notif-dropdown-list"></div>
+              <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+                <a href="notifications.html" class="text-xs font-semibold">View All Notifications →</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="avatar-preview" style="width: 38px; height: 38px; border-width: 2px;">
+            <img class="current-user-avatar" src="" alt="Avatar">
+          </div>
+        </div>
+      </header>
+
+      <main class="app-content">
+
+        <!-- Live Smart Match Notification Container -->
+        <div id="smart-match-alert-box" class="smart-match-box hidden">
+          <div class="smart-match-header">
+            <div class="smart-match-title">
+              <span>✨ Smart Donation Matching: Existing Items Found!</span>
+            </div>
+            <span class="badge badge-completed">Instant Availability</span>
+          </div>
+          <p class="text-xs text-muted" style="margin-bottom: 0.5rem;">
+            A donor has already contributed an item that might match your needs. You can request it directly right now without waiting for a new donor!
+          </p>
+          <div id="smart-matches-list">
+            <!-- Injected dynamically -->
+          </div>
+        </div>
+
+        <!-- No Match Status (Subtle Banner) -->
+        <div id="no-match-alert-box" class="card hidden" style="margin-bottom: 1.5rem; background: var(--border-light); border-left: 4px solid var(--primary);">
+          <div class="card-body" style="padding: 0.85rem 1.25rem;">
+            <span style="font-weight: 600; font-size: 0.9rem;">ℹ️ No matching donations available right now.</span>
+            <p class="text-xs text-muted" style="margin-top: 2px;">Fill in and submit your request below. We will notify nearby donors immediately.</p>
+          </div>
+        </div>
+
+        <!-- Request Donation Form Card -->
+        <div class="card" style="max-width: 820px; margin: 0 auto;">
+          <div class="card-header">
+            <span class="card-title">📝 Donation Request Form</span>
+            <span class="badge badge-pending">Status: Draft</span>
+          </div>
+
+          <div class="card-body">
+            <form id="create-request-form" novalidate>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="req-category">Item Category <span class="required">*</span></label>
+                  <select id="req-category" class="form-control" required>
+                    <option value="clothes">👕 Clothes</option>
+                    <option value="food">🍚 Food</option>
+                    <option value="money">💰 Financial Aid</option>
+                    <option value="medicine">💊 Medicine / Healthcare</option>
+                    <option value="books">📚 Books / Study Material</option>
+                    <option value="toys">🧸 Toys</option>
+                    <option value="shoes">👟 Shoes</option>
+                    <option value="household">🏠 Household Items</option>
+                    <option value="blankets" selected>🛏️ Blankets / Bedding</option>
+                    <option value="other">📦 Other Items</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="req-item-name">
+                    Item Name <span class="required">*</span>
+                    <span class="text-xs text-muted" style="font-weight: normal;">(Type to trigger Smart Match)</span>
+                  </label>
+                  <input type="text" id="req-item-name" class="form-control" placeholder="e.g. 10 blankets, school textbooks, rice, winter jackets" required autocomplete="off">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="req-quantity">Quantity Required <span class="required">*</span></label>
+                  <input type="text" id="req-quantity" class="form-control" placeholder="e.g. 10 blankets, 20 kg, 5 sets" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="req-urgency">Urgency Level <span class="required">*</span></label>
+                  <select id="req-urgency" class="form-control" required>
+                    <option value="Low">Low - Needed within few weeks</option>
+                    <option value="Medium" selected>Medium - Needed this week</option>
+                    <option value="High">High - Needed within 48 hours</option>
+                    <option value="Emergency">🚨 Emergency / Urgent Relief</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="req-location">Location / City <span class="required">*</span></label>
+                  <input type="text" id="req-location" class="form-control" placeholder="e.g. Chennai, T Nagar area" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="req-date">Needed By Date <span class="required">*</span></label>
+                  <input type="date" id="req-date" class="form-control" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="req-reason">Reason / Purpose <span class="required">*</span></label>
+                <input type="text" id="req-reason" class="form-control" placeholder="e.g. Night shelter for flood victims, school children support, orphan home" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="req-description">Detailed Description & Delivery Instructions</label>
+                <textarea id="req-description" class="form-control" placeholder="Provide extra details such as sizes, pickup availability, contact timing, etc."></textarea>
+              </div>
+
+              <div id="req-form-error" class="form-error hidden" style="margin-bottom: 1.25rem;">
+                <span>⚠️</span> <span id="req-form-error-text"></span>
+              </div>
+
+              <div class="flex items-center justify-between" style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
+                <a href="donee-dashboard.html" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary btn-lg" id="submit-req-btn">
+                  Publish Donation Request →
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = checkAuth(['donee', 'admin']);
+      if (!user) return;
+
+      renderAppChrome('request-donation');
+
+      // Notification toggle
+      const notifBell = document.getElementById('notif-bell-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', () => notifDropdown.classList.remove('show'));
+
+      // Prefill user city and default date
+      document.getElementById('req-location').value = user.city || 'Chennai';
+      const today = new Date();
+      const inThreeDays = new Date(today);
+      inThreeDays.setDate(today.getDate() + 3);
+      document.getElementById('req-date').value = inThreeDays.toISOString().split('T')[0];
+      document.getElementById('req-date').min = today.toISOString().split('T')[0];
+
+      // Smart Matching Trigger on Input
+      const itemNameInput = document.getElementById('req-item-name');
+      const categorySelect = document.getElementById('req-category');
+      const smartMatchBox = document.getElementById('smart-match-alert-box');
+      const smartMatchesList = document.getElementById('smart-matches-list');
+      const noMatchBox = document.getElementById('no-match-alert-box');
+
+      function triggerSmartMatch() {
+        const itemVal = itemNameInput.value.trim();
+        const catVal = categorySelect.value;
+
+        if (itemVal.length < 2) {
+          smartMatchBox.classList.add('hidden');
+          noMatchBox.classList.add('hidden');
+          return;
+        }
+
+        const matches = findSmartMatches(itemVal, catVal);
+
+        if (matches.length > 0) {
+          noMatchBox.classList.add('hidden');
+          smartMatchesList.innerHTML = matches.map(m => `
+            <div class="match-item-card">
+              <div class="flex items-center gap-3">
+                <span style="font-size: 1.75rem;">${getCategoryIcon(m.category)}</span>
+                <div>
+                  <div style="font-weight: 700; color: var(--text-main); font-size: 0.95rem;">${m.itemName}</div>
+                  <div class="text-xs text-muted">
+                    Available Qty: <strong>${m.quantity}</strong> | Donor: <strong>${m.donorName}</strong> | 📍 ${m.location}
+                  </div>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <a href="donation-details.html?id=${m.id}&openRequest=1" class="btn btn-success btn-sm">
+                  Request This Existing Item
+                </a>
+              </div>
+            </div>
+          `).join('');
+          smartMatchBox.classList.remove('hidden');
+        } else {
+          smartMatchBox.classList.add('hidden');
+          noMatchBox.classList.remove('hidden');
+        }
+      }
+
+      itemNameInput.addEventListener('input', triggerSmartMatch);
+      categorySelect.addEventListener('change', triggerSmartMatch);
+
+      // Handle Submit
+      const form = document.getElementById('create-request-form');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const errBox = document.getElementById('req-form-error');
+        const errText = document.getElementById('req-form-error-text');
+        errBox.classList.add('hidden');
+
+        const cat = categorySelect.value;
+        const name = itemNameInput.value.trim();
+        const qty = document.getElementById('req-quantity').value.trim();
+        const urgency = document.getElementById('req-urgency').value;
+        const loc = document.getElementById('req-location').value.trim();
+        const date = document.getElementById('req-date').value;
+        const reason = document.getElementById('req-reason').value.trim();
+        const desc = document.getElementById('req-description').value.trim();
+
+        if (!name || !qty || !loc || !date || !reason) {
+          errText.textContent = 'Please fill all required fields marked with *';
+          errBox.classList.remove('hidden');
+          return;
+        }
+
+        const res = createDonationRequest({
+          itemType: cat,
+          itemName: name,
+          quantityRequired: qty,
+          urgency,
+          location: loc,
+          requiredDate: date,
+          reason,
+          description: desc
+        });
+
+        if (res.success) {
+          showToast(res.message, 'success', 'Request Created');
+          setTimeout(() => {
+            window.location.href = 'requests.html';
+          }, 1000);
+        } else {
+          errText.textContent = res.message;
+          errBox.classList.remove('hidden');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

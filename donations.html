@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Donations - Donation Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="donor-dashboard.html" class="sidebar-brand">
+          <div class="sidebar-brand-icon">🤝</div>
+          <span>DonationCare</span>
+        </a>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+          <img class="current-user-avatar" src="" alt="User Avatar">
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name current-user-name">Loading...</div>
+          <div class="current-user-role badge badge-role-donor">DONOR</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+
+      <div class="sidebar-footer">
+        <a href="javascript:void(0)" onclick="logoutUser()" class="nav-item" style="color: var(--danger);">
+          <span class="nav-item-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle-btn" title="Toggle Sidebar">☰</button>
+          <div class="page-heading">
+            <h1>My Donations</h1>
+            <p>Track, manage, and coordinate your offered items and aid</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <a href="donate.html" class="btn btn-primary btn-sm">+ Donate Another Item</a>
+          <button class="topbar-action-btn theme-toggle-btn" title="Switch Theme">🌙</button>
+
+          <div style="position: relative;">
+            <button class="topbar-action-btn" id="notif-bell-btn" title="Notifications">
+              <span>🔔</span>
+              <span class="notification-count hidden">0</span>
+            </button>
+            <div class="dropdown-menu" id="notif-dropdown">
+              <div class="dropdown-header">
+                <span>Notifications</span>
+                <a href="javascript:void(0)" onclick="markAllNotificationsAsRead()" class="text-xs" style="color: var(--primary);">Mark all read</a>
+              </div>
+              <div class="dropdown-list" id="notif-dropdown-list"></div>
+              <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+                <a href="notifications.html" class="text-xs font-semibold">View All Notifications →</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="avatar-preview" style="width: 38px; height: 38px; border-width: 2px;">
+            <img class="current-user-avatar" src="" alt="Avatar">
+          </div>
+        </div>
+      </header>
+
+      <main class="app-content">
+
+        <!-- Filters Bar -->
+        <div class="filters-bar">
+          <div class="filters-group">
+            <input type="text" id="donation-search" class="form-control" placeholder="Search by item name..." style="width: 240px; padding: 0.45rem 0.85rem;">
+            
+            <select id="status-filter" class="filter-select">
+              <option value="all">All Statuses</option>
+              <option value="Pending">Pending (Available)</option>
+              <option value="Requested">Requested</option>
+              <option value="Accepted">Accepted</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+
+            <select id="category-filter" class="filter-select">
+              <option value="all">All Categories</option>
+              <option value="clothes">👕 Clothes</option>
+              <option value="food">🍚 Food</option>
+              <option value="money">💰 Money</option>
+              <option value="medicine">💊 Medicine</option>
+              <option value="books">📚 Books</option>
+              <option value="toys">🧸 Toys</option>
+              <option value="shoes">👟 Shoes</option>
+              <option value="household">🏠 Household Items</option>
+              <option value="blankets">🛏️ Blankets</option>
+              <option value="other">📦 Other</option>
+            </select>
+          </div>
+
+          <div class="text-xs text-muted" id="donation-counter-label">
+            Showing 0 donations
+          </div>
+        </div>
+
+        <!-- Donations Table Card -->
+        <div class="card">
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="custom-table" id="donations-table">
+                <thead>
+                  <tr>
+                    <th>Donation ID</th>
+                    <th>Item Name</th>
+                    <th>Type</th>
+                    <th>Quantity / Amount</th>
+                    <th>Date Posted</th>
+                    <th>Location</th>
+                    <th>Donee</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="donations-table-body">
+                  <!-- Injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+
+            <div id="no-donations-view" class="text-center" style="padding: 3rem 1.5rem; display: none;">
+              <div style="font-size: 3rem; margin-bottom: 0.5rem;">📦</div>
+              <h3 style="font-weight: 700; margin-bottom: 0.35rem;">No Donations Found</h3>
+              <p class="text-sm text-muted" style="margin-bottom: 1.25rem;">You haven't added any donations matching your filter criteria.</p>
+              <a href="donate.html" class="btn btn-primary">+ Post a New Donation</a>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Edit Donation Modal (Only accessible for Pending donations) -->
+  <div class="modal-overlay" id="edit-donation-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Donation Details</h3>
+        <button class="modal-close-btn" id="close-edit-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-donation-form">
+          <input type="hidden" id="edit-don-id">
+          
+          <div class="form-group">
+            <label class="form-label" for="edit-don-name">Item Name <span class="required">*</span></label>
+            <input type="text" id="edit-don-name" class="form-control" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="edit-don-qty">Quantity / Amount <span class="required">*</span></label>
+              <input type="text" id="edit-don-qty" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-don-condition">Condition</label>
+              <select id="edit-don-condition" class="form-control">
+                <option value="Brand New">Brand New</option>
+                <option value="Like New">Like New</option>
+                <option value="Good Condition">Good Condition</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-don-location">Location <span class="required">*</span></label>
+            <input type="text" id="edit-don-location" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-don-desc">Description</label>
+            <textarea id="edit-don-desc" class="form-control"></textarea>
+          </div>
+
+          <div id="edit-don-error" class="form-error hidden"></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" id="cancel-edit-btn">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" id="save-edit-btn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = checkAuth(['donor', 'admin']);
+      if (!user) return;
+
+      renderAppChrome('donations');
+
+      // Setup Notification bell toggle
+      const notifBell = document.getElementById('notif-bell-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', () => notifDropdown.classList.remove('show'));
+
+      // Event listeners for filters
+      document.getElementById('donation-search').addEventListener('input', renderDonationsTable);
+      document.getElementById('status-filter').addEventListener('change', renderDonationsTable);
+      document.getElementById('category-filter').addEventListener('change', renderDonationsTable);
+
+      renderDonationsTable();
+
+      // Modal Handlers
+      const editModal = document.getElementById('edit-donation-modal');
+      const closeEditModal = document.getElementById('close-edit-modal');
+      const cancelEditBtn = document.getElementById('cancel-edit-btn');
+      const saveEditBtn = document.getElementById('save-edit-btn');
+
+      closeEditModal.onclick = cancelEditBtn.onclick = () => editModal.classList.remove('active');
+
+      saveEditBtn.onclick = () => {
+        const id = document.getElementById('edit-don-id').value;
+        const name = document.getElementById('edit-don-name').value.trim();
+        const qty = document.getElementById('edit-don-qty').value.trim();
+        const cond = document.getElementById('edit-don-condition').value;
+        const loc = document.getElementById('edit-don-location').value.trim();
+        const desc = document.getElementById('edit-don-desc').value.trim();
+
+        if (!name || !qty || !loc) {
+          showToast('Please fill all required fields.', 'error');
+          return;
+        }
+
+        const res = updateDonation(id, {
+          itemName: name,
+          quantity: qty,
+          condition: cond,
+          location: loc,
+          description: desc
+        });
+
+        if (res.success) {
+          showToast('Donation updated successfully!', 'success');
+          editModal.classList.remove('active');
+          renderDonationsTable();
+        } else {
+          showToast(res.message, 'error');
+        }
+      };
+    });
+
+    function renderDonationsTable() {
+      const user = getCurrentUser();
+      const allDonations = getData(STORAGE_KEYS.DONATIONS, []);
+      const myDonations = allDonations.filter(d => user.role === 'admin' || d.donorId === user.id);
+
+      const q = document.getElementById('donation-search').value.trim().toLowerCase();
+      const statusF = document.getElementById('status-filter').value;
+      const catF = document.getElementById('category-filter').value;
+
+      const filtered = myDonations.filter(d => {
+        if (q && !d.itemName.toLowerCase().includes(q) && !d.id.toLowerCase().includes(q)) return false;
+        if (statusF !== 'all' && d.status.toLowerCase() !== statusF.toLowerCase()) return false;
+        if (catF !== 'all' && d.category.toLowerCase() !== catF.toLowerCase()) return false;
+        return true;
+      });
+
+      document.getElementById('donation-counter-label').textContent = `Showing ${filtered.length} of ${myDonations.length} donations`;
+
+      const tbody = document.getElementById('donations-table-body');
+      const emptyView = document.getElementById('no-donations-view');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        emptyView.style.display = 'block';
+        return;
+      }
+
+      emptyView.style.display = 'none';
+      tbody.innerHTML = filtered.map(d => `
+        <tr>
+          <td style="font-family: var(--font-mono); font-size: 0.825rem; font-weight: 600;">${d.id}</td>
+          <td style="font-weight: 700;">${d.itemName}</td>
+          <td>${getCategoryIcon(d.category)} ${d.category}</td>
+          <td>${d.quantity}</td>
+          <td>${formatDate(d.createdAt)}</td>
+          <td>📍 ${d.location}</td>
+          <td>
+            ${d.doneeName ? `
+              <div class="flex items-center gap-1">
+                <span>👤</span>
+                <span style="font-weight: 600;">${d.doneeName}</span>
+                <a href="chat.html?userId=${d.doneeId}" title="Chat with Donee" style="font-size: 0.9rem; margin-left: 4px;">💬</a>
+              </div>
+            ` : '<span class="text-muted text-xs">None yet</span>'}
+          </td>
+          <td>${getStatusBadge(d.status)}</td>
+          <td>
+            <div class="flex gap-1">
+              <a href="donation-details.html?id=${d.id}" class="btn btn-secondary btn-sm" title="View Details">View</a>
+              ${d.status === 'Pending' ? `
+                <button onclick="openEditModal('${d.id}')" class="btn btn-secondary btn-sm" title="Edit Item">Edit</button>
+              ` : ''}
+              ${d.status === 'Pending' || d.status === 'Requested' ? `
+                <button onclick="handleCancelDonation('${d.id}')" class="btn btn-outline-danger btn-sm" title="Cancel Donation">Cancel</button>
+              ` : ''}
+              <button onclick="handleDeleteDonation('${d.id}')" class="btn btn-outline-danger btn-sm" title="Delete">🗑️</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openEditModal(donationId) {
+      const donations = getData(STORAGE_KEYS.DONATIONS, []);
+      const d = donations.find(item => item.id === donationId);
+      if (!d) return;
+
+      if (d.status !== 'Pending') {
+        showToast('Only Pending donations can be modified.', 'warning');
+        return;
+      }
+
+      document.getElementById('edit-don-id').value = d.id;
+      document.getElementById('edit-don-name').value = d.itemName;
+      document.getElementById('edit-don-qty').value = d.quantity;
+      document.getElementById('edit-don-condition').value = d.condition || 'Brand New';
+      document.getElementById('edit-don-location').value = d.location;
+      document.getElementById('edit-don-desc').value = d.description || '';
+
+      document.getElementById('edit-donation-modal').classList.add('active');
+    }
+
+    function handleCancelDonation(donationId) {
+      if (confirm('Are you sure you want to cancel this donation?')) {
+        const res = cancelDonation(donationId);
+        showToast(res.message, 'info');
+        renderDonationsTable();
+      }
+    }
+
+    function handleDeleteDonation(donationId) {
+      if (confirm('Permanently delete this donation record?')) {
+        deleteData(STORAGE_KEYS.DONATIONS, donationId);
+        showToast('Donation deleted.', 'info');
+        renderDonationsTable();
+      }
+    }
+  </script>
+</body>
+</html>

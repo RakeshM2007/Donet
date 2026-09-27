@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Items - Donation Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="donee-dashboard.html" class="sidebar-brand">
+          <div class="sidebar-brand-icon">🤝</div>
+          <span>DonationCare</span>
+        </a>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+          <img class="current-user-avatar" src="" alt="User Avatar">
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name current-user-name">Loading...</div>
+          <div class="current-user-role badge badge-role-donee">DONEE</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+
+      <div class="sidebar-footer">
+        <a href="javascript:void(0)" onclick="logoutUser()" class="nav-item" style="color: var(--danger);">
+          <span class="nav-item-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle-btn" title="Toggle Sidebar">☰</button>
+          <div class="page-heading">
+            <h1>Search Items</h1>
+            <p>Find available donations by keyword, location, category, or condition</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <a href="request-donation.html" class="btn btn-secondary btn-sm">Can't Find? Request Item</a>
+          <button class="topbar-action-btn theme-toggle-btn" title="Switch Theme">🌙</button>
+
+          <div style="position: relative;">
+            <button class="topbar-action-btn" id="notif-bell-btn" title="Notifications">
+              <span>🔔</span>
+              <span class="notification-count hidden">0</span>
+            </button>
+            <div class="dropdown-menu" id="notif-dropdown">
+              <div class="dropdown-header">
+                <span>Notifications</span>
+                <a href="javascript:void(0)" onclick="markAllNotificationsAsRead()" class="text-xs" style="color: var(--primary);">Mark all read</a>
+              </div>
+              <div class="dropdown-list" id="notif-dropdown-list"></div>
+              <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+                <a href="notifications.html" class="text-xs font-semibold">View All Notifications →</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="avatar-preview" style="width: 38px; height: 38px; border-width: 2px;">
+            <img class="current-user-avatar" src="" alt="Avatar">
+          </div>
+        </div>
+      </header>
+
+      <main class="app-content">
+
+        <!-- Hero Search Section -->
+        <div class="hero-search-box">
+          <h2 class="hero-search-title">What do you need?</h2>
+          <p class="hero-search-subtitle">Type any item, food, clothes, medicine, or location to browse available contributions</p>
+
+          <div class="search-input-wrapper">
+            <div class="main-search-bar">
+              <span style="font-size: 1.25rem; color: var(--primary); margin-right: 0.5rem;">🔍</span>
+              <input type="text" id="search-query-input" placeholder="e.g. Rice, Blankets, Clothes, School Books, Medicine..." autocomplete="off">
+              <button type="button" id="btn-execute-search" class="btn btn-primary" style="border-radius: var(--radius-full); padding: 0.55rem 1.4rem;">
+                Search
+              </button>
+            </div>
+
+            <!-- Dynamic Suggestions Dropdown -->
+            <div id="search-suggestions" class="search-suggestions-dropdown hidden">
+              <!-- Dynamically populated suggestions -->
+            </div>
+          </div>
+
+          <!-- Search History Section -->
+          <div class="search-history-container" id="recent-searches-box">
+            <span class="text-xs text-muted" style="font-weight: 700;">Recent Searches:</span>
+            <div id="search-history-chips" class="flex flex-wrap gap-1 items-center">
+              <!-- Chips injected here -->
+            </div>
+            <button type="button" id="btn-clear-history" class="btn btn-secondary btn-sm" style="padding: 0.15rem 0.5rem; font-size: 0.7rem; border-radius: var(--radius-full);">
+              Clear
+            </button>
+          </div>
+        </div>
+
+        <!-- Comprehensive Filters Bar -->
+        <div class="filters-bar">
+          <div class="filters-group">
+            <!-- Category Filter -->
+            <select id="filter-category" class="filter-select">
+              <option value="all">All Categories</option>
+              <option value="clothes">👕 Clothes</option>
+              <option value="food">🍚 Food</option>
+              <option value="money">💰 Money</option>
+              <option value="medicine">💊 Medicine</option>
+              <option value="books">📚 Books</option>
+              <option value="toys">🧸 Toys</option>
+              <option value="shoes">👟 Shoes</option>
+              <option value="household">🏠 Household Items</option>
+              <option value="blankets">🛏️ Blankets</option>
+              <option value="other">📦 Other</option>
+            </select>
+
+            <!-- Location Search / Filter -->
+            <input type="text" id="filter-location" class="form-control" placeholder="Filter by City / Location..." style="width: 180px; padding: 0.45rem 0.75rem; font-size: 0.85rem;">
+
+            <!-- Condition Filter -->
+            <select id="filter-condition" class="filter-select">
+              <option value="all">All Conditions</option>
+              <option value="Brand New">Brand New</option>
+              <option value="Gently Used">Gently Used</option>
+              <option value="Good Condition">Good Condition</option>
+            </select>
+
+            <!-- Availability Status -->
+            <select id="filter-status" class="filter-select">
+              <option value="all">All Statuses</option>
+              <option value="Pending" selected>Available Now</option>
+              <option value="Requested">Requested</option>
+              <option value="Completed">Completed</option>
+            </select>
+
+            <!-- Sorting Options -->
+            <select id="sort-by" class="filter-select" style="font-weight: 600; border-color: var(--primary);">
+              <option value="newest">Sort: Newest First</option>
+              <option value="oldest">Sort: Oldest First</option>
+              <option value="location">Sort: Location (A-Z)</option>
+              <option value="qty-high">Sort: Highest Quantity</option>
+              <option value="qty-low">Sort: Lowest Quantity</option>
+            </select>
+
+            <button type="button" id="btn-reset-filters" class="btn btn-secondary btn-sm">Reset</button>
+          </div>
+
+          <div class="text-xs font-semibold text-muted" id="search-results-count">
+            Found 0 matching items
+          </div>
+        </div>
+
+        <!-- Search Results Grid -->
+        <div class="donation-grid" id="search-results-grid">
+          <!-- Dynamically populated cards -->
+        </div>
+
+        <!-- No Matching Items State -->
+        <div id="no-results-state" class="card text-center hidden" style="padding: 3rem 1.5rem; margin-top: 1rem;">
+          <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔍</div>
+          <h3 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 0.5rem;">No matching donations available right now.</h3>
+          <p class="text-sm text-muted" style="max-width: 500px; margin: 0 auto 1.5rem;">
+            Don't worry! You can easily create a Donation Request. Donors in your area will be alerted about your need.
+          </p>
+          <a href="request-donation.html" class="btn btn-primary btn-lg">
+            ✍️ Create Donation Request Now
+          </a>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = checkAuth();
+      if (!user) return;
+
+      renderAppChrome('search');
+
+      // Notification toggle
+      const notifBell = document.getElementById('notif-bell-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', () => notifDropdown.classList.remove('show'));
+
+      // Check query parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const initialQ = urlParams.get('q') || '';
+      const initialCat = urlParams.get('category') || 'all';
+
+      const searchInput = document.getElementById('search-query-input');
+      const catFilter = document.getElementById('filter-category');
+      const locFilter = document.getElementById('filter-location');
+      const condFilter = document.getElementById('filter-condition');
+      const statusFilter = document.getElementById('filter-status');
+      const sortSelect = document.getElementById('sort-by');
+      const suggestionsBox = document.getElementById('search-suggestions');
+
+      if (initialQ) searchInput.value = initialQ;
+      if (initialCat) catFilter.value = initialCat;
+
+      renderSearchHistory();
+      performSearch();
+
+      // Search button click & Enter key
+      document.getElementById('btn-execute-search').addEventListener('click', () => {
+        saveSearchHistory(searchInput.value);
+        renderSearchHistory();
+        suggestionsBox.classList.add('hidden');
+        performSearch();
+      });
+
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          saveSearchHistory(searchInput.value);
+          renderSearchHistory();
+          suggestionsBox.classList.add('hidden');
+          performSearch();
+        }
+      });
+
+      // Autocomplete Suggestions
+      searchInput.addEventListener('input', () => {
+        const val = searchInput.value.trim();
+        if (val.length >= 2) {
+          const suggestions = getSearchSuggestions(val);
+          if (suggestions.length > 0) {
+            suggestionsBox.innerHTML = suggestions.map(s => `
+              <div class="suggestion-item" onclick="applySuggestion('${s.replace(/'/g, "\\'")}')">
+                <span>🔎</span>
+                <span>${s}</span>
+              </div>
+            `).join('');
+            suggestionsBox.classList.remove('hidden');
+          } else {
+            suggestionsBox.classList.add('hidden');
+          }
+        } else {
+          suggestionsBox.classList.add('hidden');
+        }
+        performSearch();
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+          suggestionsBox.classList.add('hidden');
+        }
+      });
+
+      // Filter changes
+      catFilter.addEventListener('change', performSearch);
+      locFilter.addEventListener('input', performSearch);
+      condFilter.addEventListener('change', performSearch);
+      statusFilter.addEventListener('change', performSearch);
+      sortSelect.addEventListener('change', performSearch);
+
+      // Reset filters
+      document.getElementById('btn-reset-filters').addEventListener('click', () => {
+        searchInput.value = '';
+        catFilter.value = 'all';
+        locFilter.value = '';
+        condFilter.value = 'all';
+        statusFilter.value = 'Pending';
+        sortSelect.value = 'newest';
+        performSearch();
+      });
+
+      // Clear search history
+      document.getElementById('btn-clear-history').addEventListener('click', () => {
+        clearSearchHistory();
+        renderSearchHistory();
+      });
+    });
+
+    function applySuggestion(text) {
+      const searchInput = document.getElementById('search-query-input');
+      searchInput.value = text;
+      saveSearchHistory(text);
+      renderSearchHistory();
+      document.getElementById('search-suggestions').classList.add('hidden');
+      performSearch();
+    }
+
+    function renderSearchHistory() {
+      const chipsContainer = document.getElementById('search-history-chips');
+      const history = getData(STORAGE_KEYS.SEARCH_HISTORY, []);
+
+      if (history.length === 0) {
+        chipsContainer.innerHTML = '<span class="text-xs text-muted" style="margin-left: 4px;">No recent searches</span>';
+        return;
+      }
+
+      chipsContainer.innerHTML = history.map(item => `
+        <span class="search-chip">
+          <span onclick="applySuggestion('${item.replace(/'/g, "\\'")}')">${item}</span>
+          <span class="search-chip-remove" onclick="handleRemoveHistoryItem('${item.replace(/'/g, "\\'")}', event)">✕</span>
+        </span>
+      `).join('');
+    }
+
+    function handleRemoveHistoryItem(item, e) {
+      e.stopPropagation();
+      removeSearchHistoryItem(item);
+      renderSearchHistory();
+    }
+
+    function performSearch() {
+      const q = document.getElementById('search-query-input').value.trim();
+      const cat = document.getElementById('filter-category').value;
+      const loc = document.getElementById('filter-location').value.trim();
+      const cond = document.getElementById('filter-condition').value;
+      const status = document.getElementById('filter-status').value;
+      const sortBy = document.getElementById('sort-by').value;
+
+      let results = searchAvailableDonations(q, {
+        category: cat,
+        location: loc,
+        condition: cond,
+        status: status
+      });
+
+      // Sorting
+      if (sortBy === 'newest') {
+        results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      } else if (sortBy === 'oldest') {
+        results.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      } else if (sortBy === 'location') {
+        results.sort((a, b) => a.location.localeCompare(b.location));
+      } else if (sortBy === 'qty-high') {
+        results.sort((a, b) => parseInt(b.quantity) - parseInt(a.quantity));
+      } else if (sortBy === 'qty-low') {
+        results.sort((a, b) => parseInt(a.quantity) - parseInt(b.quantity));
+      }
+
+      const grid = document.getElementById('search-results-grid');
+      const noResults = document.getElementById('no-results-state');
+      const countLabel = document.getElementById('search-results-count');
+
+      countLabel.textContent = `Found ${results.length} matching items`;
+
+      if (results.length === 0) {
+        grid.innerHTML = '';
+        noResults.classList.remove('hidden');
+        return;
+      }
+
+      noResults.classList.add('hidden');
+      grid.innerHTML = results.map(d => `
+        <div class="donation-card">
+          <div class="donation-card-banner">
+            <span>${getCategoryIcon(d.category)}</span>
+            <div class="donation-card-status">${getStatusBadge(d.status)}</div>
+            <div class="donation-card-category-badge">${d.category.toUpperCase()}</div>
+          </div>
+          <div class="donation-card-body">
+            <h4 class="donation-card-title">${d.itemName}</h4>
+            <div class="donation-card-meta">
+              <span class="donation-card-meta-item">📦 Qty: <strong>${d.quantity}</strong></span>
+              <span class="donation-card-meta-item">📍 ${d.location}</span>
+              <span class="donation-card-meta-item">✨ ${d.condition || 'Good'}</span>
+            </div>
+            <p class="donation-card-desc">${d.description || 'Verified donation contribution.'}</p>
+            
+            <div class="donation-card-donor">
+              <div class="donor-avatar-small">
+                <img src="${d.donorAvatar || DEFAULT_AVATARS[0]}" alt="${d.donorName}">
+              </div>
+              <div>
+                <div class="donor-name-text">${d.donorName}</div>
+                <div class="donor-location-text">Posted on ${formatDate(d.createdAt)}</div>
+              </div>
+            </div>
+          </div>
+          <div class="donation-card-actions">
+            <a href="donation-details.html?id=${d.id}" class="btn btn-secondary btn-sm flex-1">View Details</a>
+            ${d.status === 'Pending' ? `
+              <a href="donation-details.html?id=${d.id}&openRequest=1" class="btn btn-primary btn-sm flex-1">Request Item</a>
+            ` : ''}
+            <a href="chat.html?userId=${d.donorId}" class="btn btn-secondary btn-sm" title="Chat with Donor">💬</a>
+          </div>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donee Dashboard - Donation Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="donee-dashboard.html" class="sidebar-brand">
+          <div class="sidebar-brand-icon">🤝</div>
+          <span>DonationCare</span>
+        </a>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+          <img class="current-user-avatar" src="" alt="User Avatar">
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name current-user-name">Loading...</div>
+          <div class="current-user-role badge badge-role-donee">DONEE</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav">
+        <!-- Injected via script.js -->
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="javascript:void(0)" onclick="logoutUser()" class="nav-item" style="color: var(--danger);">
+          <span class="nav-item-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle-btn" title="Toggle Sidebar">☰</button>
+          <div class="page-heading">
+            <h1>Donee Dashboard</h1>
+            <p>Search for available items or request assistance from our generous donors</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <a href="request-donation.html" class="btn btn-primary btn-sm">
+            <span>✍️ Request Donation</span>
+          </a>
+
+          <!-- Theme toggle -->
+          <button class="topbar-action-btn theme-toggle-btn" title="Switch Theme">🌙</button>
+
+          <!-- Notification Dropdown -->
+          <div style="position: relative;">
+            <button class="topbar-action-btn" id="notif-bell-btn" title="Notifications">
+              <span>🔔</span>
+              <span class="notification-count hidden">0</span>
+            </button>
+            <div class="dropdown-menu" id="notif-dropdown">
+              <div class="dropdown-header">
+                <span>Notifications</span>
+                <a href="javascript:void(0)" onclick="markAllNotificationsAsRead()" class="text-xs" style="color: var(--primary);">Mark all read</a>
+              </div>
+              <div class="dropdown-list" id="notif-dropdown-list">
+                <!-- Notifications injected dynamically -->
+              </div>
+              <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+                <a href="notifications.html" class="text-xs font-semibold">View All Notifications →</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Menu Dropdown -->
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: 0.5rem;">
+            <div class="avatar-preview" style="width: 38px; height: 38px; border-width: 2px;">
+              <img class="current-user-avatar" src="" alt="Avatar">
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- App Content Area -->
+      <main class="app-content">
+
+        <!-- Hero Search Box ("What do you need?") -->
+        <div class="hero-search-box">
+          <h2 class="hero-search-title">What do you need?</h2>
+          <p class="hero-search-subtitle">Search through hundreds of verified clothes, food, medicine, blankets, books, and household goods</p>
+
+          <div class="search-input-wrapper">
+            <form id="hero-search-form" class="main-search-bar" action="search-items.html" method="GET">
+              <span style="font-size: 1.25rem; color: var(--primary); margin-right: 0.5rem;">🔍</span>
+              <input type="text" name="q" id="hero-search-input" placeholder="Search clothes, rice, blankets, school books, shoes..." autocomplete="off">
+              <button type="submit" class="btn btn-primary" style="border-radius: var(--radius-full); padding: 0.55rem 1.4rem;">
+                Search
+              </button>
+            </form>
+          </div>
+
+          <!-- Quick Category Chips -->
+          <div class="search-history-container" style="margin-top: 1.25rem;">
+            <span class="text-xs text-muted" style="font-weight: 600;">Popular:</span>
+            <a href="search-items.html?category=clothes" class="search-chip">👕 Clothes</a>
+            <a href="search-items.html?category=food" class="search-chip">🍚 Food</a>
+            <a href="search-items.html?category=medicine" class="search-chip">💊 Medicine</a>
+            <a href="search-items.html?category=blankets" class="search-chip">🛏️ Blankets</a>
+            <a href="search-items.html?category=books" class="search-chip">📚 Books</a>
+            <a href="search-items.html?category=shoes" class="search-chip">👟 Shoes</a>
+          </div>
+        </div>
+
+        <!-- Dashboard Cards -->
+        <div class="stats-grid">
+          <div class="stat-card stat-primary">
+            <div class="stat-info-text">
+              <span class="stat-label">Total Requests</span>
+              <span class="stat-value" id="stat-total-requests">0</span>
+            </div>
+            <div class="stat-icon">📋</div>
+          </div>
+
+          <div class="stat-card stat-warning">
+            <div class="stat-info-text">
+              <span class="stat-label">Pending Requests</span>
+              <span class="stat-value" id="stat-pending-requests">0</span>
+            </div>
+            <div class="stat-icon">⏳</div>
+          </div>
+
+          <div class="stat-card stat-accent">
+            <div class="stat-info-text">
+              <span class="stat-label">Accepted Requests</span>
+              <span class="stat-value" id="stat-accepted-requests">0</span>
+            </div>
+            <div class="stat-icon">🤝</div>
+          </div>
+
+          <div class="stat-card stat-success">
+            <div class="stat-info-text">
+              <span class="stat-label">Completed Donations</span>
+              <span class="stat-value" id="stat-completed-requests">0</span>
+            </div>
+            <div class="stat-icon">✅</div>
+          </div>
+        </div>
+
+        <!-- Available Donations Grid Header -->
+        <div class="flex items-center justify-between" style="margin-bottom: 1rem;">
+          <div>
+            <h3 style="font-size: 1.2rem; font-weight: 700;">🎁 Newly Available Donations</h3>
+            <p class="text-xs text-muted">Items recently contributed by donors ready for immediate request</p>
+          </div>
+          <a href="available-donations.html" class="btn btn-secondary btn-sm">Explore All Catalog →</a>
+        </div>
+
+        <!-- Catalog Highlights Grid -->
+        <div class="donation-grid" id="available-donations-grid" style="margin-bottom: 2rem;">
+          <!-- Injected dynamically -->
+        </div>
+
+        <!-- Donee's Active Requests Table -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📋 Your Recent Donation Requests</span>
+            <a href="requests.html" class="text-xs font-semibold">Manage Requests →</a>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Item Requested</th>
+                    <th>Category</th>
+                    <th>Qty Needed</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="my-requests-body">
+                  <!-- Injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+            <div id="donee-requests-empty" class="text-center" style="padding: 2rem; color: var(--text-muted); display: none;">
+              You have not posted any requests yet. Click <strong>Request Donation</strong> if you need support!
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = checkAuth(['donee']);
+      if (!user) return;
+
+      renderAppChrome('dashboard');
+
+      // Setup Notification bell toggle
+      const notifBell = document.getElementById('notif-bell-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', () => notifDropdown.classList.remove('show'));
+
+      // Calculate Donee statistics
+      const requests = getData(STORAGE_KEYS.REQUESTS, []);
+      const myRequests = requests.filter(r => r.doneeId === user.id);
+
+      const total = myRequests.length;
+      const pending = myRequests.filter(r => r.status === 'Pending').length;
+      const accepted = myRequests.filter(r => r.status === 'Accepted').length;
+      const completed = myRequests.filter(r => r.status === 'Completed').length;
+
+      document.getElementById('stat-total-requests').textContent = total;
+      document.getElementById('stat-pending-requests').textContent = pending;
+      document.getElementById('stat-accepted-requests').textContent = accepted;
+      document.getElementById('stat-completed-requests').textContent = completed;
+
+      // Render My Recent Requests table
+      const reqBody = document.getElementById('my-requests-body');
+      const reqEmpty = document.getElementById('donee-requests-empty');
+      if (myRequests.length === 0) {
+        reqEmpty.style.display = 'block';
+      } else {
+        reqBody.innerHTML = myRequests.slice(0, 5).map(r => `
+          <tr>
+            <td style="font-weight: 600;">${r.itemName}</td>
+            <td>${getCategoryIcon(r.itemType)} ${r.itemType}</td>
+            <td>${r.quantityRequired}</td>
+            <td>${formatDate(r.createdAt)}</td>
+            <td>${getStatusBadge(r.status)}</td>
+            <td>
+              <div class="flex gap-1">
+                ${r.donorId ? `<a href="chat.html?userId=${r.donorId}" class="btn btn-secondary btn-sm">Chat</a>` : ''}
+                <a href="requests.html" class="btn btn-outline-primary btn-sm">Details</a>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Render Available Items
+      const donations = getData(STORAGE_KEYS.DONATIONS, []);
+      const available = donations.filter(d => d.status === 'Pending');
+      const grid = document.getElementById('available-donations-grid');
+
+      if (available.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem; background: var(--bg-surface); border: 1px dashed var(--border-color); border-radius: var(--radius-lg); color: var(--text-muted);">
+            No donations available right now. Click <a href="request-donation.html" style="font-weight: 700; color: var(--primary);">Request Donation</a> to post your need!
+          </div>
+        `;
+      } else {
+        grid.innerHTML = available.slice(0, 6).map(d => `
+          <div class="donation-card">
+            <div class="donation-card-banner">
+              <span>${getCategoryIcon(d.category)}</span>
+              <div class="donation-card-status">${getStatusBadge(d.status)}</div>
+              <div class="donation-card-category-badge">${d.category.toUpperCase()}</div>
+            </div>
+            <div class="donation-card-body">
+              <h4 class="donation-card-title">${d.itemName}</h4>
+              <div class="donation-card-meta">
+                <span class="donation-card-meta-item">📦 Qty: <strong>${d.quantity}</strong></span>
+                <span class="donation-card-meta-item">📍 ${d.location}</span>
+                <span class="donation-card-meta-item">✨ ${d.condition}</span>
+              </div>
+              <p class="donation-card-desc">${d.description || 'Verified donation item in good condition.'}</p>
+              
+              <div class="donation-card-donor">
+                <div class="donor-avatar-small">
+                  <img src="${d.donorAvatar || DEFAULT_AVATARS[0]}" alt="${d.donorName}">
+                </div>
+                <div>
+                  <div class="donor-name-text">${d.donorName}</div>
+                  <div class="donor-location-text">Posted on ${formatDate(d.createdAt)}</div>
+                </div>
+              </div>
+            </div>
+            <div class="donation-card-actions">
+              <a href="donation-details.html?id=${d.id}" class="btn btn-secondary btn-sm flex-1">View Details</a>
+              <button onclick="openDirectRequestModal('${d.id}')" class="btn btn-primary btn-sm flex-1">Request Item</button>
+            </div>
+          </div>
+        `).join('');
+      }
+    });
+
+    function openDirectRequestModal(donationId) {
+      window.location.href = `donation-details.html?id=${donationId}&openRequest=1`;
+    }
+  </script>
+</body>
+</html>

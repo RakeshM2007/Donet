@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports & Analytics - Donation Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-brand">
+          <div class="sidebar-brand-icon">🤝</div>
+          <span>DonationCare</span>
+        </a>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+          <img class="current-user-avatar" src="" alt="User Avatar">
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name current-user-name">Loading...</div>
+          <div class="current-user-role badge badge-role-donor">ROLE</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+
+      <div class="sidebar-footer">
+        <a href="javascript:void(0)" onclick="logoutUser()" class="nav-item" style="color: var(--danger);">
+          <span class="nav-item-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle-btn" title="Toggle Sidebar">☰</button>
+          <div class="page-heading">
+            <h1>Reports & Analytics</h1>
+            <p>Comprehensive visual breakdown of donation volume, categories, and community impact</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button type="button" onclick="window.print()" class="btn btn-secondary btn-sm">🖨️ Export PDF / Print</button>
+          <button class="topbar-action-btn theme-toggle-btn" title="Switch Theme">🌙</button>
+
+          <div style="position: relative;">
+            <button class="topbar-action-btn" id="notif-bell-btn" title="Notifications">
+              <span>🔔</span>
+              <span class="notification-count hidden">0</span>
+            </button>
+            <div class="dropdown-menu" id="notif-dropdown">
+              <div class="dropdown-header">
+                <span>Notifications</span>
+                <a href="javascript:void(0)" onclick="markAllNotificationsAsRead()" class="text-xs" style="color: var(--primary);">Mark all read</a>
+              </div>
+              <div class="dropdown-list" id="notif-dropdown-list"></div>
+              <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+                <a href="notifications.html" class="text-xs font-semibold">View All Notifications →</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="avatar-preview" style="width: 38px; height: 38px; border-width: 2px;">
+            <img class="current-user-avatar" src="" alt="Avatar">
+          </div>
+        </div>
+      </header>
+
+      <main class="app-content">
+
+        <!-- Top Statistical Metrics Cards -->
+        <div class="stats-grid">
+          <div class="stat-card stat-primary">
+            <div class="stat-info-text">
+              <span class="stat-label">Total Contributions</span>
+              <span class="stat-value" id="rep-total-donations">0</span>
+            </div>
+            <div class="stat-icon">🎁</div>
+          </div>
+
+          <div class="stat-card stat-success">
+            <div class="stat-info-text">
+              <span class="stat-label">Money Donated</span>
+              <span class="stat-value" id="rep-money-donated">$0</span>
+            </div>
+            <div class="stat-icon">💰</div>
+          </div>
+
+          <div class="stat-card stat-info">
+            <div class="stat-info-text">
+              <span class="stat-label">Physical Items Donated</span>
+              <span class="stat-value" id="rep-item-donations">0</span>
+            </div>
+            <div class="stat-icon">📦</div>
+          </div>
+
+          <div class="stat-card stat-accent">
+            <div class="stat-info-text">
+              <span class="stat-label">Total Requests</span>
+              <span class="stat-value" id="rep-total-requests">0</span>
+            </div>
+            <div class="stat-icon">📋</div>
+          </div>
+
+          <div class="stat-card stat-success">
+            <div class="stat-info-text">
+              <span class="stat-label">Handover Success Rate</span>
+              <span class="stat-value" id="rep-success-rate">0%</span>
+            </div>
+            <div class="stat-icon">📈</div>
+          </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="grid grid-cols-2 gap-6" style="margin-bottom: 2rem;">
+
+          <!-- Chart 1: Category Distribution Bar Chart -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📊 Donations by Category</span>
+              <span class="text-xs text-muted">Item volume</span>
+            </div>
+            <div class="card-body">
+              <div class="bar-chart-container" id="category-bar-chart">
+                <!-- Bar columns injected dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart 2: Status Breakdown Donut / Visual -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">🎯 Donation Lifecycle Status</span>
+              <span class="text-xs text-muted">Pending vs Completed</span>
+            </div>
+            <div class="card-body">
+              <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem;" id="status-progress-bars">
+                <!-- Progress rows injected dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Community Users & Ranking Comparison -->
+        <div class="grid grid-cols-2 gap-6">
+
+          <!-- Most Donated Items -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">🏆 Most Donated Categories</span>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <div class="table-responsive">
+                <table class="custom-table">
+                  <thead>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Category</th>
+                      <th>Total Items</th>
+                      <th>Share</th>
+                    </tr>
+                  </thead>
+                  <tbody id="top-donated-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Most Requested Items -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">🔥 Most Requested Needs</span>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <div class="table-responsive">
+                <table class="custom-table">
+                  <thead>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Item / Category</th>
+                      <th>Requests</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="top-requested-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = checkAuth();
+      if (!user) return;
+
+      renderAppChrome('reports');
+
+      // Notification toggle
+      const notifBell = document.getElementById('notif-bell-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', () => notifDropdown.classList.remove('show'));
+
+      calculateAndRenderReports();
+    });
+
+    function calculateAndRenderReports() {
+      const donations = getData(STORAGE_KEYS.DONATIONS, []);
+      const requests = getData(STORAGE_KEYS.REQUESTS, []);
+      const users = getData(STORAGE_KEYS.USERS, []);
+
+      // 1. Metric Cards
+      const totalDon = donations.length;
+      const moneyDon = donations.filter(d => d.category === 'money');
+      let totalMoney = 0;
+      moneyDon.forEach(d => {
+        if (d.amount) totalMoney += Number(d.amount);
+      });
+
+      const itemDon = donations.filter(d => d.category !== 'money');
+      const totalReq = requests.length;
+      const completed = donations.filter(d => d.status === 'Completed').length;
+      const successRate = totalDon > 0 ? Math.round((completed / totalDon) * 100) : 0;
+
+      document.getElementById('rep-total-donations').textContent = totalDon;
+      document.getElementById('rep-money-donated').textContent = `₹/$\ ${totalMoney.toLocaleString()}`;
+      document.getElementById('rep-item-donations').textContent = itemDon.length;
+      document.getElementById('rep-total-requests').textContent = totalReq;
+      document.getElementById('rep-success-rate').textContent = `${successRate}%`;
+
+      // 2. Category Distribution Bar Chart
+      const catCounts = {};
+      CATEGORIES.forEach(c => catCounts[c.id] = 0);
+      donations.forEach(d => {
+        const cat = d.category.toLowerCase();
+        catCounts[cat] = (catCounts[cat] || 0) + 1;
+      });
+
+      const chartContainer = document.getElementById('category-bar-chart');
+      const maxVal = Math.max(...Object.values(catCounts), 1);
+
+      chartContainer.innerHTML = CATEGORIES.slice(0, 7).map(cat => {
+        const count = catCounts[cat.id] || 0;
+        const heightPct = Math.max(Math.round((count / maxVal) * 100), 8);
+
+        return `
+          <div class="bar-column">
+            <div class="bar-fill" style="height: ${heightPct}%;">
+              <span class="bar-value">${count}</span>
+            </div>
+            <div class="bar-label">${cat.icon} ${cat.name}</div>
+          </div>
+        `;
+      }).join('');
+
+      // 3. Status Breakdown Progress Bars
+      const pending = donations.filter(d => d.status === 'Pending').length;
+      const requested = donations.filter(d => d.status === 'Requested').length;
+      const accepted = donations.filter(d => d.status === 'Accepted').length;
+      const comp = donations.filter(d => d.status === 'Completed').length;
+
+      const progressBox = document.getElementById('status-progress-bars');
+      const calcPct = (num) => totalDon > 0 ? Math.round((num / totalDon) * 100) : 0;
+
+      progressBox.innerHTML = `
+        <div>
+          <div class="flex justify-between text-xs font-semibold" style="margin-bottom: 4px;">
+            <span>Completed Handed Over</span>
+            <span>${comp} (${calcPct(comp)}%)</span>
+          </div>
+          <div style="height: 10px; border-radius: 999px; background: var(--border-color); overflow: hidden;">
+            <div style="width: ${calcPct(comp)}%; height: 100%; background: var(--success); transition: width 0.6s ease;"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs font-semibold" style="margin-bottom: 4px;">
+            <span>Accepted Coordination</span>
+            <span>${accepted} (${calcPct(accepted)}%)</span>
+          </div>
+          <div style="height: 10px; border-radius: 999px; background: var(--border-color); overflow: hidden;">
+            <div style="width: ${calcPct(accepted)}%; height: 100%; background: var(--info); transition: width 0.6s ease;"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs font-semibold" style="margin-bottom: 4px;">
+            <span>Requested by Recipient</span>
+            <span>${requested} (${calcPct(requested)}%)</span>
+          </div>
+          <div style="height: 10px; border-radius: 999px; background: var(--border-color); overflow: hidden;">
+            <div style="width: ${calcPct(requested)}%; height: 100%; background: var(--accent); transition: width 0.6s ease;"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs font-semibold" style="margin-bottom: 4px;">
+            <span>Available / Pending</span>
+            <span>${pending} (${calcPct(pending)}%)</span>
+          </div>
+          <div style="height: 10px; border-radius: 999px; background: var(--border-color); overflow: hidden;">
+            <div style="width: ${calcPct(pending)}%; height: 100%; background: var(--warning); transition: width 0.6s ease;"></div>
+          </div>
+        </div>
+      `;
+
+      // 4. Most Donated Categories Table
+      const sortedCats = Object.keys(catCounts).map(k => ({
+        id: k,
+        name: (CATEGORIES.find(c => c.id === k) || {}).name || k,
+        icon: (CATEGORIES.find(c => c.id === k) || {}).icon || '📦',
+        count: catCounts[k]
+      })).sort((a, b) => b.count - a.count);
+
+      const topDonBody = document.getElementById('top-donated-body');
+      topDonBody.innerHTML = sortedCats.slice(0, 5).map((c, i) => `
+        <tr>
+          <td style="font-weight: 700;">#${i + 1}</td>
+          <td>${c.icon} ${c.name}</td>
+          <td style="font-weight: 600;">${c.count} items</td>
+          <td>${totalDon > 0 ? Math.round((c.count / totalDon) * 100) : 0}%</td>
+        </tr>
+      `).join('');
+
+      // 5. Most Requested Needs Table
+      const reqCatCounts = {};
+      requests.forEach(r => {
+        const cat = r.itemType.toLowerCase();
+        reqCatCounts[cat] = (reqCatCounts[cat] || 0) + 1;
+      });
+
+      const sortedReqs = Object.keys(reqCatCounts).map(k => ({
+        id: k,
+        name: (CATEGORIES.find(c => c.id === k) || {}).name || k,
+        icon: (CATEGORIES.find(c => c.id === k) || {}).icon || '📦',
+        count: reqCatCounts[k]
+      })).sort((a, b) => b.count - a.count);
+
+      const topReqBody = document.getElementById('top-requested-body');
+      if (sortedReqs.length === 0) {
+        topReqBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted" style="padding: 1.5rem;">No requests logged yet.</td></tr>';
+      } else {
+        topReqBody.innerHTML = sortedReqs.slice(0, 5).map((r, i) => `
+          <tr>
+            <td style="font-weight: 700;">#${i + 1}</td>
+            <td>${r.icon} ${r.name}</td>
+            <td style="font-weight: 600;">${r.count} requests</td>
+            <td><span class="badge badge-pending">Active Need</span></td>
+          </tr>
+        `).join('');
+      }
+    }
+  </script>
+</body>
+</html>

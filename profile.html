@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile - Donation Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-brand">
+          <div class="sidebar-brand-icon">🤝</div>
+          <span>DonationCare</span>
+        </a>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+          <img class="current-user-avatar" src="" alt="User Avatar">
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name current-user-name">Loading...</div>
+          <div class="current-user-role badge badge-role-donor">ROLE</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+
+      <div class="sidebar-footer">
+        <a href="javascript:void(0)" onclick="logoutUser()" class="nav-item" style="color: var(--danger);">
+          <span class="nav-item-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle-btn" title="Toggle Sidebar">☰</button>
+          <div class="page-heading">
+            <h1>Account Profile</h1>
+            <p>View personal statistics, contact credentials, and update details</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button class="topbar-action-btn theme-toggle-btn" title="Switch Theme">🌙</button>
+
+          <div style="position: relative;">
+            <button class="topbar-action-btn" id="notif-bell-btn" title="Notifications">
+              <span>🔔</span>
+              <span class="notification-count hidden">0</span>
+            </button>
+            <div class="dropdown-menu" id="notif-dropdown">
+              <div class="dropdown-header">
+                <span>Notifications</span>
+                <a href="javascript:void(0)" onclick="markAllNotificationsAsRead()" class="text-xs" style="color: var(--primary);">Mark all read</a>
+              </div>
+              <div class="dropdown-list" id="notif-dropdown-list"></div>
+              <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+                <a href="notifications.html" class="text-xs font-semibold">View All Notifications →</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="avatar-preview" style="width: 38px; height: 38px; border-width: 2px;">
+            <img class="current-user-avatar" src="" alt="Avatar">
+          </div>
+        </div>
+      </header>
+
+      <main class="app-content">
+
+        <!-- Top Profile Card -->
+        <div class="card" style="margin-bottom: 2rem;">
+          <div class="card-body">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+              <div class="flex items-center gap-4">
+                <div class="avatar-preview" style="width: 90px; height: 90px; border-width: 3px;">
+                  <img id="profile-img" src="" alt="Profile Image">
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 id="profile-name" style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">User Full Name</h2>
+                    <span id="profile-role-badge" class="badge">ROLE</span>
+                  </div>
+                  <div class="text-sm text-muted" id="profile-email" style="margin-top: 2px;">user@example.com</div>
+                  <div class="text-xs text-muted" style="margin-top: 4px;">
+                    📍 <span id="profile-city">City</span> • 📞 <span id="profile-phone">Phone</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Action Buttons -->
+              <div class="flex gap-2">
+                <button type="button" class="btn btn-primary" id="btn-open-edit-profile">
+                  ✏️ Edit Profile
+                </button>
+                <button type="button" class="btn btn-secondary" id="btn-open-change-pwd">
+                  🔒 Change Password
+                </button>
+                <a href="donation-history.html" class="btn btn-secondary" id="btn-history-link">
+                  📜 History Records
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Role Specific Statistics Cards -->
+        <div id="profile-stats-grid" class="stats-grid">
+          <!-- Populated dynamically according to Donor or Donee -->
+        </div>
+
+        <!-- Contact & Address Card -->
+        <div class="grid grid-cols-2 gap-6" style="margin-bottom: 2rem;">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📌 Registered Details</span>
+            </div>
+            <div class="card-body">
+              <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.9rem;">
+                <div>
+                  <span class="text-xs text-muted" style="font-weight: 700; text-transform: uppercase;">Full Address</span>
+                  <div id="profile-address" style="font-weight: 600; margin-top: 2px;">Not provided</div>
+                </div>
+                <div>
+                  <span class="text-xs text-muted" style="font-weight: 700; text-transform: uppercase;">Primary City</span>
+                  <div id="profile-city-detail" style="font-weight: 600; margin-top: 2px;">City</div>
+                </div>
+                <div>
+                  <span class="text-xs text-muted" style="font-weight: 700; text-transform: uppercase;">Account Security</span>
+                  <div style="font-weight: 600; margin-top: 2px; color: var(--success);">Verified Active Session (LocalStorage)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Contribution History Preview -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title" id="recent-records-title">📜 Recent Activity</span>
+              <a href="donation-history.html" class="text-xs font-semibold">View Full History →</a>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <div class="table-responsive">
+                <table class="custom-table">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Qty/Amount</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="profile-recent-table-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div class="modal-overlay" id="edit-profile-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Update Profile Information</h3>
+        <button class="modal-close-btn" id="close-edit-profile-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-profile-form">
+          <div class="form-group">
+            <label class="form-label" for="edit-prof-name">Full Name <span class="required">*</span></label>
+            <input type="text" id="edit-prof-name" class="form-control" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="edit-prof-phone">Phone Number <span class="required">*</span></label>
+              <input type="tel" id="edit-prof-phone" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-prof-city">City <span class="required">*</span></label>
+              <input type="text" id="edit-prof-city" class="form-control" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-prof-address">Address</label>
+            <input type="text" id="edit-prof-address" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Profile Avatar</label>
+            <div class="flex items-center gap-3">
+              <div class="avatar-preview" style="width: 50px; height: 50px;">
+                <img id="edit-prof-preview-img" src="" alt="Avatar">
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-pick-random-avatar">🎲 Random Avatar</button>
+            </div>
+            <input type="hidden" id="edit-prof-avatar-val">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" id="cancel-edit-profile">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" id="save-profile-btn">Save Profile Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div class="modal-overlay" id="change-pwd-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Change Password</h3>
+        <button class="modal-close-btn" id="close-pwd-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="change-pwd-form">
+          <div class="form-group">
+            <label class="form-label" for="pwd-current">Current Password <span class="required">*</span></label>
+            <input type="password" id="pwd-current" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="pwd-new">New Password (min 6 chars) <span class="required">*</span></label>
+            <input type="password" id="pwd-new" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="pwd-confirm">Confirm New Password <span class="required">*</span></label>
+            <input type="password" id="pwd-confirm" class="form-control" required>
+          </div>
+          <div id="pwd-error-msg" class="form-error hidden"></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" id="cancel-pwd-modal">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" id="save-pwd-btn">Update Password</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = checkAuth();
+      if (!user) return;
+
+      renderAppChrome('profile');
+
+      // Notification toggle
+      const notifBell = document.getElementById('notif-bell-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', () => notifDropdown.classList.remove('show'));
+
+      loadUserProfile();
+
+      // Modal Handlers
+      const editModal = document.getElementById('edit-profile-modal');
+      const pwdModal = document.getElementById('change-pwd-modal');
+
+      document.getElementById('btn-open-edit-profile').onclick = () => {
+        const u = getCurrentUser();
+        document.getElementById('edit-prof-name').value = u.name;
+        document.getElementById('edit-prof-phone').value = u.phone;
+        document.getElementById('edit-prof-city').value = u.city || '';
+        document.getElementById('edit-prof-address').value = u.address || '';
+        document.getElementById('edit-prof-preview-img').src = u.avatar || DEFAULT_AVATARS[0];
+        document.getElementById('edit-prof-avatar-val').value = u.avatar || DEFAULT_AVATARS[0];
+        editModal.classList.add('active');
+      };
+
+      document.getElementById('btn-pick-random-avatar').onclick = () => {
+        const rand = DEFAULT_AVATARS[Math.floor(Math.random() * DEFAULT_AVATARS.length)];
+        document.getElementById('edit-prof-preview-img').src = rand;
+        document.getElementById('edit-prof-avatar-val').value = rand;
+      };
+
+      document.getElementById('close-edit-profile-modal').onclick = 
+      document.getElementById('cancel-edit-profile').onclick = () => editModal.classList.remove('active');
+
+      document.getElementById('save-profile-btn').onclick = () => {
+        const name = document.getElementById('edit-prof-name').value.trim();
+        const phone = document.getElementById('edit-prof-phone').value.trim();
+        const city = document.getElementById('edit-prof-city').value.trim();
+        const address = document.getElementById('edit-prof-address').value.trim();
+        const avatar = document.getElementById('edit-prof-avatar-val').value;
+
+        if (!name || !phone || !city) {
+          showToast('Please fill all required fields.', 'error');
+          return;
+        }
+
+        const users = getData(STORAGE_KEYS.USERS, []);
+        const u = users.find(item => item.id === user.id);
+        if (u) {
+          u.name = name;
+          u.phone = phone;
+          u.city = city;
+          u.address = address;
+          u.avatar = avatar;
+          saveData(STORAGE_KEYS.USERS, users);
+          setCurrentUser(u);
+        }
+
+        showToast('Profile updated successfully!', 'success');
+        editModal.classList.remove('active');
+        loadUserProfile();
+        renderAppChrome('profile');
+      };
+
+      // Password Modal
+      document.getElementById('btn-open-change-pwd').onclick = () => {
+        document.getElementById('pwd-current').value = '';
+        document.getElementById('pwd-new').value = '';
+        document.getElementById('pwd-confirm').value = '';
+        document.getElementById('pwd-error-msg').classList.add('hidden');
+        pwdModal.classList.add('active');
+      };
+
+      document.getElementById('close-pwd-modal').onclick = 
+      document.getElementById('cancel-pwd-modal').onclick = () => pwdModal.classList.remove('active');
+
+      document.getElementById('save-pwd-btn').onclick = () => {
+        const cur = document.getElementById('pwd-current').value;
+        const newP = document.getElementById('pwd-new').value;
+        const confP = document.getElementById('pwd-confirm').value;
+        const errBox = document.getElementById('pwd-error-msg');
+        errBox.classList.add('hidden');
+
+        const users = getData(STORAGE_KEYS.USERS, []);
+        const u = users.find(item => item.id === user.id);
+
+        if (!u || u.password !== cur) {
+          errBox.textContent = 'Current password is incorrect.';
+          errBox.classList.remove('hidden');
+          return;
+        }
+
+        if (newP.length < 6) {
+          errBox.textContent = 'New password must be at least 6 characters.';
+          errBox.classList.remove('hidden');
+          return;
+        }
+
+        if (newP !== confP) {
+          errBox.textContent = 'New passwords do not match.';
+          errBox.classList.remove('hidden');
+          return;
+        }
+
+        u.password = newP;
+        saveData(STORAGE_KEYS.USERS, users);
+        showToast('Password changed successfully!', 'success');
+        pwdModal.classList.remove('active');
+      };
+    });
+
+    function loadUserProfile() {
+      const user = getCurrentUser();
+      if (!user) return;
+
+      document.getElementById('profile-name').textContent = user.name;
+      document.getElementById('profile-email').textContent = user.email;
+      document.getElementById('profile-city').textContent = user.city || 'City';
+      document.getElementById('profile-phone').textContent = user.phone || 'Phone';
+      document.getElementById('profile-img').src = user.avatar || DEFAULT_AVATARS[0];
+      document.getElementById('profile-address').textContent = user.address || 'Address not registered yet.';
+      document.getElementById('profile-city-detail').textContent = user.city || 'Not provided';
+
+      const roleBadge = document.getElementById('profile-role-badge');
+      roleBadge.textContent = user.role.toUpperCase();
+      roleBadge.className = `badge badge-role-${user.role.toLowerCase()}`;
+
+      const statsGrid = document.getElementById('profile-stats-grid');
+      const donations = getData(STORAGE_KEYS.DONATIONS, []);
+      const requests = getData(STORAGE_KEYS.REQUESTS, []);
+      const tbody = document.getElementById('profile-recent-table-body');
+
+      if (user.role === 'donor') {
+        const myDon = donations.filter(d => d.donorId === user.id);
+        const total = myDon.length;
+        const pending = myDon.filter(d => d.status === 'Pending').length;
+        const completed = myDon.filter(d => d.status === 'Completed').length;
+
+        statsGrid.innerHTML = `
+          <div class="stat-card stat-primary">
+            <div class="stat-info-text">
+              <span class="stat-label">Total Donations</span>
+              <span class="stat-value">${total}</span>
+            </div>
+            <div class="stat-icon">🎁</div>
+          </div>
+          <div class="stat-card stat-warning">
+            <div class="stat-info-text">
+              <span class="stat-label">Pending Donations</span>
+              <span class="stat-value">${pending}</span>
+            </div>
+            <div class="stat-icon">⏳</div>
+          </div>
+          <div class="stat-card stat-success">
+            <div class="stat-info-text">
+              <span class="stat-label">Completed Donations</span>
+              <span class="stat-value">${completed}</span>
+            </div>
+            <div class="stat-icon">✅</div>
+          </div>
+        `;
+
+        document.getElementById('recent-records-title').textContent = '🎁 Your Recent Donations';
+        tbody.innerHTML = myDon.slice(0, 5).map(d => `
+          <tr>
+            <td style="font-weight: 600;">${d.itemName}</td>
+            <td>${d.quantity}</td>
+            <td>${formatDate(d.createdAt)}</td>
+            <td>${getStatusBadge(d.status)}</td>
+          </tr>
+        `).join('') || '<tr><td colspan="4" class="text-center text-muted" style="padding: 1.5rem;">No donations yet.</td></tr>';
+
+      } else {
+        // Donee
+        const myReq = requests.filter(r => r.doneeId === user.id);
+        const total = myReq.length;
+        const pending = myReq.filter(r => r.status === 'Pending').length;
+        const accepted = myReq.filter(r => r.status === 'Accepted').length;
+        const completed = myReq.filter(r => r.status === 'Completed').length;
+
+        statsGrid.innerHTML = `
+          <div class="stat-card stat-primary">
+            <div class="stat-info-text">
+              <span class="stat-label">Total Requests</span>
+              <span class="stat-value">${total}</span>
+            </div>
+            <div class="stat-icon">📋</div>
+          </div>
+          <div class="stat-card stat-warning">
+            <div class="stat-info-text">
+              <span class="stat-label">Pending Requests</span>
+              <span class="stat-value">${pending}</span>
+            </div>
+            <div class="stat-icon">⏳</div>
+          </div>
+          <div class="stat-card stat-accent">
+            <div class="stat-info-text">
+              <span class="stat-label">Accepted Requests</span>
+              <span class="stat-value">${accepted}</span>
+            </div>
+            <div class="stat-icon">🤝</div>
+          </div>
+          <div class="stat-card stat-success">
+            <div class="stat-info-text">
+              <span class="stat-label">Completed Received</span>
+              <span class="stat-value">${completed}</span>
+            </div>
+            <div class="stat-icon">✅</div>
+          </div>
+        `;
+
+        document.getElementById('recent-records-title').textContent = '📋 Your Recent Requests';
+        tbody.innerHTML = myReq.slice(0, 5).map(r => `
+          <tr>
+            <td style="font-weight: 600;">${r.itemName}</td>
+            <td>${r.quantityRequired}</td>
+            <td>${formatDate(r.createdAt)}</td>
+            <td>${getStatusBadge(r.status)}</td>
+          </tr>
+        `).join('') || '<tr><td colspan="4" class="text-center text-muted" style="padding: 1.5rem;">No requests yet.</td></tr>';
+      }
+    }
+  </script>
+</body>
+</html>

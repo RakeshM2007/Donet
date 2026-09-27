@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - Donation Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-brand">
+          <div class="sidebar-brand-icon">🤝</div>
+          <span>DonationCare</span>
+        </a>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+          <img class="current-user-avatar" src="" alt="User Avatar">
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name current-user-name">Loading...</div>
+          <div class="current-user-role badge badge-role-donor">ROLE</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+
+      <div class="sidebar-footer">
+        <a href="javascript:void(0)" onclick="logoutUser()" class="nav-item" style="color: var(--danger);">
+          <span class="nav-item-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle-btn" title="Toggle Sidebar">☰</button>
+          <div class="page-heading">
+            <h1>Account & Platform Settings</h1>
+            <p>Customize your experience, preferences, theme mode, and security</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button class="topbar-action-btn theme-toggle-btn" title="Switch Theme">🌙</button>
+
+          <div style="position: relative;">
+            <button class="topbar-action-btn" id="notif-bell-btn" title="Notifications">
+              <span>🔔</span>
+              <span class="notification-count hidden">0</span>
+            </button>
+            <div class="dropdown-menu" id="notif-dropdown">
+              <div class="dropdown-header">
+                <span>Notifications</span>
+                <a href="javascript:void(0)" onclick="markAllNotificationsAsRead()" class="text-xs" style="color: var(--primary);">Mark all read</a>
+              </div>
+              <div class="dropdown-list" id="notif-dropdown-list"></div>
+              <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+                <a href="notifications.html" class="text-xs font-semibold">View All Notifications →</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="avatar-preview" style="width: 38px; height: 38px; border-width: 2px;">
+            <img class="current-user-avatar" src="" alt="Avatar">
+          </div>
+        </div>
+      </header>
+
+      <main class="app-content" style="max-width: 900px; margin: 0 auto;">
+
+        <!-- 1. Theme & Appearance -->
+        <div class="card" style="margin-bottom: 1.75rem;">
+          <div class="card-header">
+            <span class="card-title">🎨 Theme & Display Appearance</span>
+          </div>
+          <div class="card-body">
+            <p class="text-sm text-muted" style="margin-bottom: 1rem;">
+              Choose between modern Light mode and comfortable Dark mode. Setting is persisted across your browser.
+            </p>
+            <div class="flex items-center gap-4">
+              <button type="button" class="btn btn-secondary theme-choice-btn" id="btn-theme-light" onclick="setAppTheme('light')">
+                ☀️ Light Mode
+              </button>
+              <button type="button" class="btn btn-secondary theme-choice-btn" id="btn-theme-dark" onclick="setAppTheme('dark')">
+                🌙 Dark Mode
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Edit Profile Settings -->
+        <div class="card" style="margin-bottom: 1.75rem;">
+          <div class="card-header">
+            <span class="card-title">👤 Profile Details</span>
+          </div>
+          <div class="card-body">
+            <form id="settings-profile-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="set-name">Full Name</label>
+                  <input type="text" id="set-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="set-email">Email Address</label>
+                  <input type="email" id="set-email" class="form-control" readonly disabled style="opacity: 0.7;">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="set-phone">Phone Number</label>
+                  <input type="tel" id="set-phone" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="set-city">City / Area</label>
+                  <input type="text" id="set-city" class="form-control" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="set-address">Residential / Delivery Address</label>
+                <input type="text" id="set-address" class="form-control">
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-sm">Save Profile Settings</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- 3. Security & Password -->
+        <div class="card" style="margin-bottom: 1.75rem;">
+          <div class="card-header">
+            <span class="card-title">🔒 Password & Security</span>
+          </div>
+          <div class="card-body">
+            <form id="settings-pwd-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="set-cur-pwd">Current Password</label>
+                  <input type="password" id="set-cur-pwd" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="set-new-pwd">New Password (min 6 chars)</label>
+                  <input type="password" id="set-new-pwd" class="form-control" required>
+                </div>
+              </div>
+
+              <div class="form-group" style="max-width: 50%;">
+                <label class="form-label" for="set-conf-pwd">Confirm New Password</label>
+                <input type="password" id="set-conf-pwd" class="form-control" required>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-sm">Update Password</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- 4. Notification Preferences -->
+        <div class="card" style="margin-bottom: 1.75rem;">
+          <div class="card-header">
+            <span class="card-title">🔔 Notification Preferences</span>
+          </div>
+          <div class="card-body">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              <label class="flex items-center gap-3" style="cursor: pointer;">
+                <input type="checkbox" id="pref-notif-req" checked style="width: 18px; height: 18px;">
+                <div>
+                  <div style="font-weight: 600; font-size: 0.9rem;">Donation & Request Updates</div>
+                  <div class="text-xs text-muted">Alert me when requests are submitted, accepted, or handed over.</div>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-3" style="cursor: pointer;">
+                <input type="checkbox" id="pref-notif-chat" checked style="width: 18px; height: 18px;">
+                <div>
+                  <div style="font-weight: 600; font-size: 0.9rem;">Chat Message Alerts & Sound</div>
+                  <div class="text-xs text-muted">Play notification chime on new incoming donor or donee messages.</div>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-3" style="cursor: pointer;">
+                <input type="checkbox" id="pref-notif-match" checked style="width: 18px; height: 18px;">
+                <div>
+                  <div style="font-weight: 600; font-size: 0.9rem;">Smart Matching Alerts</div>
+                  <div class="text-xs text-muted">Automatically alert me when an item matching my needs is contributed.</div>
+                </div>
+              </label>
+            </div>
+
+            <button type="button" onclick="saveNotificationPreferences()" class="btn btn-secondary btn-sm" style="margin-top: 1.25rem;">
+              Save Preferences
+            </button>
+          </div>
+        </div>
+
+        <!-- 5. Logout & Session Management -->
+        <div class="card" style="border-color: var(--danger-border); background-color: var(--danger-light);">
+          <div class="card-body flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h4 style="font-weight: 700; color: var(--danger);">Terminate Session</h4>
+              <p class="text-xs text-muted">Sign out from this device and return to the login screen safely.</p>
+            </div>
+            <button type="button" onclick="logoutUser()" class="btn btn-danger">
+              🚪 Sign Out Now
+            </button>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = checkAuth();
+      if (!user) return;
+
+      renderAppChrome('settings');
+
+      // Notification toggle
+      const notifBell = document.getElementById('notif-bell-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', () => notifDropdown.classList.remove('show'));
+
+      // Populate profile inputs
+      document.getElementById('set-name').value = user.name;
+      document.getElementById('set-email').value = user.email;
+      document.getElementById('set-phone').value = user.phone;
+      document.getElementById('set-city').value = user.city || '';
+      document.getElementById('set-address').value = user.address || '';
+
+      updateThemeButtons();
+
+      // Profile update submit
+      document.getElementById('settings-profile-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('set-name').value.trim();
+        const phone = document.getElementById('set-phone').value.trim();
+        const city = document.getElementById('set-city').value.trim();
+        const address = document.getElementById('set-address').value.trim();
+
+        const users = getData(STORAGE_KEYS.USERS, []);
+        const u = users.find(item => item.id === user.id);
+        if (u) {
+          u.name = name;
+          u.phone = phone;
+          u.city = city;
+          u.address = address;
+          saveData(STORAGE_KEYS.USERS, users);
+          setCurrentUser(u);
+        }
+
+        showToast('Profile information saved.', 'success');
+        renderAppChrome('settings');
+      });
+
+      // Password update submit
+      document.getElementById('settings-pwd-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const cur = document.getElementById('set-cur-pwd').value;
+        const newP = document.getElementById('set-new-pwd').value;
+        const conf = document.getElementById('set-conf-pwd').value;
+
+        const users = getData(STORAGE_KEYS.USERS, []);
+        const u = users.find(item => item.id === user.id);
+
+        if (!u || u.password !== cur) {
+          showToast('Current password does not match.', 'error');
+          return;
+        }
+
+        if (newP.length < 6) {
+          showToast('Password must be at least 6 characters.', 'error');
+          return;
+        }
+
+        if (newP !== conf) {
+          showToast('New passwords do not match.', 'error');
+          return;
+        }
+
+        u.password = newP;
+        saveData(STORAGE_KEYS.USERS, users);
+        showToast('Password updated successfully!', 'success');
+        document.getElementById('settings-pwd-form').reset();
+      });
+    });
+
+    function setAppTheme(themeName) {
+      document.documentElement.setAttribute('data-theme', themeName);
+      localStorage.setItem(STORAGE_KEYS.THEME, themeName);
+      showToast(`Theme changed to ${themeName} mode`, 'info');
+      updateThemeButtons();
+    }
+
+    function updateThemeButtons() {
+      const cur = localStorage.getItem(STORAGE_KEYS.THEME) || 'light';
+      const btnLight = document.getElementById('btn-theme-light');
+      const btnDark = document.getElementById('btn-theme-dark');
+
+      if (cur === 'dark') {
+        btnDark.className = 'btn btn-primary theme-choice-btn';
+        btnLight.className = 'btn btn-secondary theme-choice-btn';
+      } else {
+        btnLight.className = 'btn btn-primary theme-choice-btn';
+        btnDark.className = 'btn btn-secondary theme-choice-btn';
+      }
+    }
+
+    function saveNotificationPreferences() {
+      showToast('Notification preferences updated.', 'success');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donation History - Donation Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-brand">
+          <div class="sidebar-brand-icon">🤝</div>
+          <span>DonationCare</span>
+        </a>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+          <img class="current-user-avatar" src="" alt="User Avatar">
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name current-user-name">Loading...</div>
+          <div class="current-user-role badge badge-role-donor">ROLE</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+
+      <div class="sidebar-footer">
+        <a href="javascript:void(0)" onclick="logoutUser()" class="nav-item" style="color: var(--danger);">
+          <span class="nav-item-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle-btn" title="Toggle Sidebar">☰</button>
+          <div class="page-heading">
+            <h1>Donation History</h1>
+            <p>Complete historical logs of donations, fulfilled requests, and handovers</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button type="button" onclick="window.print()" class="btn btn-secondary btn-sm">🖨️ Print / Export Log</button>
+          <button class="topbar-action-btn theme-toggle-btn" title="Switch Theme">🌙</button>
+
+          <div style="position: relative;">
+            <button class="topbar-action-btn" id="notif-bell-btn" title="Notifications">
+              <span>🔔</span>
+              <span class="notification-count hidden">0</span>
+            </button>
+            <div class="dropdown-menu" id="notif-dropdown">
+              <div class="dropdown-header">
+                <span>Notifications</span>
+                <a href="javascript:void(0)" onclick="markAllNotificationsAsRead()" class="text-xs" style="color: var(--primary);">Mark all read</a>
+              </div>
+              <div class="dropdown-list" id="notif-dropdown-list"></div>
+              <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+                <a href="notifications.html" class="text-xs font-semibold">View All Notifications →</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="avatar-preview" style="width: 38px; height: 38px; border-width: 2px;">
+            <img class="current-user-avatar" src="" alt="Avatar">
+          </div>
+        </div>
+      </header>
+
+      <main class="app-content">
+
+        <!-- History Filter Bar -->
+        <div class="filters-bar">
+          <div class="filters-group">
+            <input type="text" id="history-search" class="form-control" placeholder="Search by item, donor, or donee..." style="width: 250px; padding: 0.45rem 0.85rem;">
+
+            <select id="history-status-filter" class="filter-select">
+              <option value="all">All Statuses</option>
+              <option value="Completed">Completed Only</option>
+              <option value="Accepted">Accepted Only</option>
+              <option value="Pending">Pending Only</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+
+            <select id="history-category-filter" class="filter-select">
+              <option value="all">All Categories</option>
+              <option value="clothes">👕 Clothes</option>
+              <option value="food">🍚 Food</option>
+              <option value="money">💰 Money</option>
+              <option value="medicine">💊 Medicine</option>
+              <option value="books">📚 Books</option>
+              <option value="toys">🧸 Toys</option>
+              <option value="shoes">👟 Shoes</option>
+              <option value="household">🏠 Household</option>
+              <option value="blankets">🛏️ Blankets</option>
+              <option value="other">📦 Other</option>
+            </select>
+          </div>
+
+          <div class="text-xs font-semibold text-muted" id="history-count-text">
+            Total records: 0
+          </div>
+        </div>
+
+        <!-- History Table Card -->
+        <div class="card">
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="custom-table" id="history-table">
+                <thead>
+                  <tr>
+                    <th>Donation ID</th>
+                    <th>Item</th>
+                    <th>Category</th>
+                    <th>Quantity / Amount</th>
+                    <th>Donor</th>
+                    <th>Donee / Recipient</th>
+                    <th>Date Registered</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="history-table-body"></tbody>
+              </table>
+            </div>
+
+            <div id="history-empty" class="text-center" style="padding: 3rem; display: none;">
+              <div style="font-size: 3rem; margin-bottom: 0.5rem;">📜</div>
+              <h4 style="font-weight: 700; margin-bottom: 0.25rem;">No History Records Found</h4>
+              <p class="text-xs text-muted">No donation activities matched the current search or filters.</p>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = checkAuth();
+      if (!user) return;
+
+      renderAppChrome('history');
+
+      // Notification toggle
+      const notifBell = document.getElementById('notif-bell-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', () => notifDropdown.classList.remove('show'));
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const filterParam = urlParams.get('filter');
+      if (filterParam === 'completed') {
+        document.getElementById('history-status-filter').value = 'Completed';
+      }
+
+      document.getElementById('history-search').addEventListener('input', renderHistoryTable);
+      document.getElementById('history-status-filter').addEventListener('change', renderHistoryTable);
+      document.getElementById('history-category-filter').addEventListener('change', renderHistoryTable);
+
+      renderHistoryTable();
+    });
+
+    function renderHistoryTable() {
+      const currentUser = getCurrentUser();
+      const allDonations = getData(STORAGE_KEYS.DONATIONS, []);
+      const q = document.getElementById('history-search').value.trim().toLowerCase();
+      const statusF = document.getElementById('history-status-filter').value;
+      const catF = document.getElementById('history-category-filter').value;
+
+      // Filter relevant to user role or admin
+      let relevant = allDonations;
+      if (currentUser.role === 'donor') {
+        relevant = allDonations.filter(d => d.donorId === currentUser.id);
+      } else if (currentUser.role === 'donee') {
+        relevant = allDonations.filter(d => d.doneeId === currentUser.id || d.status === 'Completed');
+      }
+
+      const filtered = relevant.filter(d => {
+        if (statusF !== 'all' && d.status.toLowerCase() !== statusF.toLowerCase()) return false;
+        if (catF !== 'all' && d.category.toLowerCase() !== catF.toLowerCase()) return false;
+        if (q) {
+          const matchItem = d.itemName.toLowerCase().includes(q);
+          const matchDonor = d.donorName.toLowerCase().includes(q);
+          const matchDonee = (d.doneeName || '').toLowerCase().includes(q);
+          const matchId = d.id.toLowerCase().includes(q);
+          if (!matchItem && !matchDonor && !matchDonee && !matchId) return false;
+        }
+        return true;
+      });
+
+      document.getElementById('history-count-text').textContent = `Total records: ${filtered.length}`;
+
+      const tbody = document.getElementById('history-table-body');
+      const empty = document.getElementById('history-empty');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+
+      empty.style.display = 'none';
+      tbody.innerHTML = filtered.map(d => `
+        <tr>
+          <td style="font-family: var(--font-mono); font-size: 0.825rem; font-weight: 600;">${d.id}</td>
+          <td style="font-weight: 700;">${d.itemName}</td>
+          <td>${getCategoryIcon(d.category)} ${d.category}</td>
+          <td>${d.quantity}</td>
+          <td>
+            <div class="flex items-center gap-1">
+              <span>👤</span>
+              <span>${d.donorName}</span>
+            </div>
+          </td>
+          <td>
+            ${d.doneeName ? `
+              <div class="flex items-center gap-1">
+                <span>🤝</span>
+                <span>${d.doneeName}</span>
+              </div>
+            ` : '<span class="text-xs text-muted">Unassigned</span>'}
+          </td>
+          <td>${formatDate(d.createdAt)}</td>
+          <td>${getStatusBadge(d.status)}</td>
+          <td>
+            <a href="donation-details.html?id=${d.id}" class="btn btn-secondary btn-sm">View Details</a>
+          </td>
+        </tr>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

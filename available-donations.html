@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Available Donations - Donation Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-brand">
+          <div class="sidebar-brand-icon">🤝</div>
+          <span>DonationCare</span>
+        </a>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+          <img class="current-user-avatar" src="" alt="User Avatar">
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name current-user-name">Loading...</div>
+          <div class="current-user-role badge badge-role-donee">DONEE</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+
+      <div class="sidebar-footer">
+        <a href="javascript:void(0)" onclick="logoutUser()" class="nav-item" style="color: var(--danger);">
+          <span class="nav-item-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle-btn" title="Toggle Sidebar">☰</button>
+          <div class="page-heading">
+            <h1>Available Donations Catalog</h1>
+            <p>Browse active verified contributions ready for distribution</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <a href="request-donation.html" class="btn btn-primary btn-sm">+ Request Donation</a>
+          <button class="topbar-action-btn theme-toggle-btn" title="Switch Theme">🌙</button>
+
+          <div style="position: relative;">
+            <button class="topbar-action-btn" id="notif-bell-btn" title="Notifications">
+              <span>🔔</span>
+              <span class="notification-count hidden">0</span>
+            </button>
+            <div class="dropdown-menu" id="notif-dropdown">
+              <div class="dropdown-header">
+                <span>Notifications</span>
+                <a href="javascript:void(0)" onclick="markAllNotificationsAsRead()" class="text-xs" style="color: var(--primary);">Mark all read</a>
+              </div>
+              <div class="dropdown-list" id="notif-dropdown-list"></div>
+              <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+                <a href="notifications.html" class="text-xs font-semibold">View All Notifications →</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="avatar-preview" style="width: 38px; height: 38px; border-width: 2px;">
+            <img class="current-user-avatar" src="" alt="Avatar">
+          </div>
+        </div>
+      </header>
+
+      <main class="app-content">
+
+        <!-- Category Pills Filter Bar -->
+        <div class="flex items-center gap-2 flex-wrap" style="margin-bottom: 1.25rem;">
+          <button class="btn btn-primary btn-sm cat-pill active" data-cat="all">All Items</button>
+          <button class="btn btn-secondary btn-sm cat-pill" data-cat="clothes">👕 Clothes</button>
+          <button class="btn btn-secondary btn-sm cat-pill" data-cat="food">🍚 Food</button>
+          <button class="btn btn-secondary btn-sm cat-pill" data-cat="money">💰 Money</button>
+          <button class="btn btn-secondary btn-sm cat-pill" data-cat="medicine">💊 Medicine</button>
+          <button class="btn btn-secondary btn-sm cat-pill" data-cat="books">📚 Books</button>
+          <button class="btn btn-secondary btn-sm cat-pill" data-cat="toys">🧸 Toys</button>
+          <button class="btn btn-secondary btn-sm cat-pill" data-cat="shoes">👟 Shoes</button>
+          <button class="btn btn-secondary btn-sm cat-pill" data-cat="household">🏠 Household</button>
+          <button class="btn btn-secondary btn-sm cat-pill" data-cat="blankets">🛏️ Blankets</button>
+          <button class="btn btn-secondary btn-sm cat-pill" data-cat="other">📦 Other</button>
+        </div>
+
+        <!-- Quick Search Bar -->
+        <div class="filters-bar">
+          <div class="filters-group">
+            <input type="text" id="catalog-search" class="form-control" placeholder="Quick filter by item name..." style="width: 260px; padding: 0.45rem 0.85rem;">
+            <input type="text" id="catalog-city" class="form-control" placeholder="City / Area..." style="width: 180px; padding: 0.45rem 0.85rem;">
+          </div>
+          <span class="text-xs font-semibold text-muted" id="catalog-count-label">Loading catalog...</span>
+        </div>
+
+        <!-- Catalog Grid -->
+        <div class="donation-grid" id="catalog-grid"></div>
+
+        <div id="catalog-empty-view" class="card text-center hidden" style="padding: 3rem 1.5rem; margin-top: 1rem;">
+          <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎁</div>
+          <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">No Available Donations in this Category</h3>
+          <p class="text-sm text-muted" style="margin-bottom: 1.5rem;">Be the first to post a request for items in this category.</p>
+          <a href="request-donation.html" class="btn btn-primary">Create a Donation Request</a>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = checkAuth();
+      if (!user) return;
+
+      renderAppChrome('available-donations');
+
+      // Notification toggle
+      const notifBell = document.getElementById('notif-bell-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', () => notifDropdown.classList.remove('show'));
+
+      let selectedCategory = 'all';
+
+      // Category Pill Click Listeners
+      const pills = document.querySelectorAll('.cat-pill');
+      pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          pills.forEach(p => {
+            p.classList.remove('btn-primary', 'active');
+            p.classList.add('btn-secondary');
+          });
+          pill.classList.remove('btn-secondary');
+          pill.classList.add('btn-primary', 'active');
+          selectedCategory = pill.getAttribute('data-cat');
+          renderCatalog();
+        });
+      });
+
+      document.getElementById('catalog-search').addEventListener('input', renderCatalog);
+      document.getElementById('catalog-city').addEventListener('input', renderCatalog);
+
+      renderCatalog();
+
+      function renderCatalog() {
+        const donations = getData(STORAGE_KEYS.DONATIONS, []);
+        const q = document.getElementById('catalog-search').value.trim().toLowerCase();
+        const city = document.getElementById('catalog-city').value.trim().toLowerCase();
+
+        const filtered = donations.filter(d => {
+          if (d.status !== 'Pending') return false;
+          if (selectedCategory !== 'all' && d.category.toLowerCase() !== selectedCategory.toLowerCase()) return false;
+          if (q && !d.itemName.toLowerCase().includes(q) && !(d.description || '').toLowerCase().includes(q)) return false;
+          if (city && !d.location.toLowerCase().includes(city)) return false;
+          return true;
+        });
+
+        document.getElementById('catalog-count-label').textContent = `Showing ${filtered.length} available donations`;
+
+        const grid = document.getElementById('catalog-grid');
+        const empty = document.getElementById('catalog-empty-view');
+
+        if (filtered.length === 0) {
+          grid.innerHTML = '';
+          empty.classList.remove('hidden');
+          return;
+        }
+
+        empty.classList.add('hidden');
+        grid.innerHTML = filtered.map(d => `
+          <div class="donation-card">
+            <div class="donation-card-banner">
+              <span>${getCategoryIcon(d.category)}</span>
+              <div class="donation-card-status">${getStatusBadge(d.status)}</div>
+              <div class="donation-card-category-badge">${d.category.toUpperCase()}</div>
+            </div>
+            <div class="donation-card-body">
+              <h4 class="donation-card-title">${d.itemName}</h4>
+              <div class="donation-card-meta">
+                <span class="donation-card-meta-item">📦 Qty: <strong>${d.quantity}</strong></span>
+                <span class="donation-card-meta-item">📍 ${d.location}</span>
+                <span class="donation-card-meta-item">✨ ${d.condition || 'Good'}</span>
+              </div>
+              <p class="donation-card-desc">${d.description || 'Verified donation ready for handover.'}</p>
+              
+              <div class="donation-card-donor">
+                <div class="donor-avatar-small">
+                  <img src="${d.donorAvatar || DEFAULT_AVATARS[0]}" alt="${d.donorName}">
+                </div>
+                <div>
+                  <div class="donor-name-text">${d.donorName}</div>
+                  <div class="donor-location-text">Posted on ${formatDate(d.createdAt)}</div>
+                </div>
+              </div>
+            </div>
+            <div class="donation-card-actions">
+              <a href="donation-details.html?id=${d.id}" class="btn btn-secondary btn-sm flex-1">View Details</a>
+              <a href="donation-details.html?id=${d.id}&openRequest=1" class="btn btn-primary btn-sm flex-1">Request Item</a>
+              <a href="chat.html?userId=${d.donorId}" class="btn btn-secondary btn-sm" title="Chat with Donor">💬</a>
+            </div>
+          </div>
+        `).join('');
+      }
+    });
+  </script>
+</body>
+</html>

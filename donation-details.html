@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donation Details - Donation Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-brand">
+          <div class="sidebar-brand-icon">🤝</div>
+          <span>DonationCare</span>
+        </a>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+          <img class="current-user-avatar" src="" alt="User Avatar">
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name current-user-name">User</div>
+          <div class="current-user-role badge badge-role-donor">ROLE</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+
+      <div class="sidebar-footer">
+        <a href="javascript:void(0)" onclick="logoutUser()" class="nav-item" style="color: var(--danger);">
+          <span class="nav-item-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle-btn" title="Toggle Sidebar">☰</button>
+          <div class="page-heading">
+            <h1>Donation Overview</h1>
+            <p>Full item details, recipient status, and donation lifecycle tracker</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button class="topbar-action-btn theme-toggle-btn" title="Switch Theme">🌙</button>
+
+          <div style="position: relative;">
+            <button class="topbar-action-btn" id="notif-bell-btn" title="Notifications">
+              <span>🔔</span>
+              <span class="notification-count hidden">0</span>
+            </button>
+            <div class="dropdown-menu" id="notif-dropdown">
+              <div class="dropdown-header">
+                <span>Notifications</span>
+                <a href="javascript:void(0)" onclick="markAllNotificationsAsRead()" class="text-xs" style="color: var(--primary);">Mark all read</a>
+              </div>
+              <div class="dropdown-list" id="notif-dropdown-list"></div>
+              <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+                <a href="notifications.html" class="text-xs font-semibold">View All Notifications →</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="avatar-preview" style="width: 38px; height: 38px; border-width: 2px;">
+            <img class="current-user-avatar" src="" alt="Avatar">
+          </div>
+        </div>
+      </header>
+
+      <main class="app-content">
+
+        <div class="flex items-center justify-between" style="margin-bottom: 1.25rem;">
+          <a href="javascript:history.back()" class="btn btn-secondary btn-sm">← Back</a>
+          <span id="details-item-id" class="text-sm font-semibold text-muted" style="font-family: var(--font-mono);">ID: ...</span>
+        </div>
+
+        <!-- Status Progress Timeline Tracker -->
+        <div class="card" style="margin-bottom: 1.75rem;">
+          <div class="card-body">
+            <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-muted); text-transform: uppercase;">
+              Donation Lifecycle Tracker
+            </h3>
+            
+            <div class="flex items-center justify-between" style="position: relative; max-width: 700px; margin: 0 auto; padding: 1rem 0;">
+              <!-- Step 1: Pending -->
+              <div class="text-center" style="position: relative; z-index: 2;">
+                <div id="step-pending" style="width: 44px; height: 44px; border-radius: 50%; background: var(--warning); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin: 0 auto 0.4rem; box-shadow: var(--shadow-sm);">
+                  ⏳
+                </div>
+                <span style="font-size: 0.8rem; font-weight: 600;">Pending</span>
+              </div>
+
+              <div style="flex: 1; height: 4px; background: var(--border-color); margin: 0 8px; margin-bottom: 1.5rem;" id="bar-1"></div>
+
+              <!-- Step 2: Requested -->
+              <div class="text-center" style="position: relative; z-index: 2;">
+                <div id="step-requested" style="width: 44px; height: 44px; border-radius: 50%; background: var(--border-color); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin: 0 auto 0.4rem;">
+                  📩
+                </div>
+                <span style="font-size: 0.8rem; font-weight: 600;">Requested</span>
+              </div>
+
+              <div style="flex: 1; height: 4px; background: var(--border-color); margin: 0 8px; margin-bottom: 1.5rem;" id="bar-2"></div>
+
+              <!-- Step 3: Accepted -->
+              <div class="text-center" style="position: relative; z-index: 2;">
+                <div id="step-accepted" style="width: 44px; height: 44px; border-radius: 50%; background: var(--border-color); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin: 0 auto 0.4rem;">
+                  🤝
+                </div>
+                <span style="font-size: 0.8rem; font-weight: 600;">Accepted</span>
+              </div>
+
+              <div style="flex: 1; height: 4px; background: var(--border-color); margin: 0 8px; margin-bottom: 1.5rem;" id="bar-3"></div>
+
+              <!-- Step 4: Completed -->
+              <div class="text-center" style="position: relative; z-index: 2;">
+                <div id="step-completed" style="width: 44px; height: 44px; border-radius: 50%; background: var(--border-color); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin: 0 auto 0.4rem;">
+                  ✅
+                </div>
+                <span style="font-size: 0.8rem; font-weight: 600;">Completed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-6">
+          <!-- Item Details Main Card -->
+          <div class="card" style="grid-column: span 2;">
+            <div class="donation-card-banner" style="height: 160px;">
+              <span id="details-cat-icon" style="font-size: 4.5rem;">👕</span>
+              <div class="donation-card-status" id="details-status-badge"></div>
+              <div class="donation-card-category-badge" id="details-cat-badge">CATEGORY</div>
+            </div>
+
+            <div class="card-body">
+              <h2 id="details-item-name" style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.75rem;">Item Name</h2>
+              
+              <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1.5rem; padding: 1rem; background-color: var(--border-light); border-radius: var(--radius-md);">
+                <div>
+                  <span class="text-xs text-muted" style="text-transform: uppercase; font-weight: 700;">Quantity / Volume</span>
+                  <div id="details-qty" style="font-weight: 700; font-size: 1.1rem; color: var(--text-main);">0</div>
+                </div>
+                <div>
+                  <span class="text-xs text-muted" style="text-transform: uppercase; font-weight: 700;">Condition</span>
+                  <div id="details-condition" style="font-weight: 700; font-size: 1.1rem; color: var(--text-main);">-</div>
+                </div>
+                <div>
+                  <span class="text-xs text-muted" style="text-transform: uppercase; font-weight: 700;">Location</span>
+                  <div id="details-location" style="font-weight: 600; color: var(--text-main);">📍 -</div>
+                </div>
+                <div>
+                  <span class="text-xs text-muted" style="text-transform: uppercase; font-weight: 700;">Handover / Logistics</span>
+                  <div id="details-pickup" style="font-weight: 600; color: var(--text-main);">🚚 -</div>
+                </div>
+                <div>
+                  <span class="text-xs text-muted" style="text-transform: uppercase; font-weight: 700;">Preferred Date</span>
+                  <div id="details-date" style="font-weight: 600; color: var(--text-main);">📅 -</div>
+                </div>
+                <div id="details-extra-container">
+                  <!-- Extra fields like Expiry, Veg/Non-veg, Size etc. -->
+                </div>
+              </div>
+
+              <div>
+                <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem;">Item Description & Notes</h4>
+                <p id="details-desc" class="text-muted" style="line-height: 1.6;">No additional description provided.</p>
+              </div>
+
+              <!-- Recipient / Request details if item is Requested or Accepted -->
+              <div id="details-recipient-section" style="margin-top: 1.75rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: none;">
+                <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--accent);">
+                  📩 Request Details from Recipient
+                </h4>
+                <div style="background-color: var(--accent-light); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--accent-border);">
+                  <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;">
+                    <span style="font-weight: 700;" id="recipient-name">Recipient Name</span>
+                    <span class="text-xs text-muted" id="request-date">Date</span>
+                  </div>
+                  <div style="font-size: 0.9rem;" id="request-message">Request message text here...</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Actions Footer -->
+            <div class="card-footer" id="details-actions-bar">
+              <!-- Dynamically populated buttons -->
+            </div>
+          </div>
+
+          <!-- Sidebar: Donor Profile Card -->
+          <div class="card" style="align-self: start;">
+            <div class="card-header">
+              <span class="card-title">👤 Donor Information</span>
+            </div>
+            <div class="card-body text-center">
+              <div class="avatar-preview" style="width: 80px; height: 80px; margin: 0 auto 1rem;">
+                <img id="donor-profile-avatar" src="" alt="Donor Photo">
+              </div>
+              <h3 id="donor-profile-name" style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.25rem;">Donor Name</h3>
+              <div class="badge badge-role-donor" style="margin-bottom: 1rem;">VERIFIED DONOR</div>
+              
+              <div style="text-align: left; font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.6rem; padding: 1rem; background-color: var(--border-light); border-radius: var(--radius-md); margin-bottom: 1.25rem;">
+                <div>📍 <strong>Location:</strong> <span id="donor-profile-city">City</span></div>
+                <div>📞 <strong>Phone:</strong> <span id="donor-profile-phone">Available on acceptance</span></div>
+                <div>🗓️ <strong>Posted:</strong> <span id="donor-profile-posted">Date</span></div>
+              </div>
+
+              <div id="donor-chat-btn-container">
+                <a href="#" id="btn-chat-with-donor" class="btn btn-secondary w-full">
+                  💬 Chat with Donor
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Request Item Modal (For Donee) -->
+  <div class="modal-overlay" id="request-item-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Request This Donation Item</h3>
+        <button class="modal-close-btn" id="close-request-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="text-sm text-muted" style="margin-bottom: 1.25rem;">
+          Send an official request to the donor with your requirements and pickup preferences.
+        </p>
+        <form id="item-request-form">
+          <div class="form-group">
+            <label class="form-label" for="req-item-name">Item Name</label>
+            <input type="text" id="req-item-name" class="form-control" readonly>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="req-quantity">Quantity Needed <span class="required">*</span></label>
+              <input type="text" id="req-quantity" class="form-control" placeholder="e.g. 1 unit, 5 pieces" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="req-date">Preferred Handover Date <span class="required">*</span></label>
+              <input type="date" id="req-date" class="form-control" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="req-location">Your Delivery / Pickup Location <span class="required">*</span></label>
+            <input type="text" id="req-location" class="form-control" placeholder="Enter your city / area" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="req-message">Message to Donor <span class="required">*</span></label>
+            <textarea id="req-message" class="form-control" placeholder="Explain your reason, urgency, or express appreciation to the donor..." required></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" id="cancel-req-modal">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" id="submit-item-req-btn">Submit Request →</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = checkAuth();
+      if (!user) return;
+
+      renderAppChrome('available-donations');
+
+      // Notification toggle
+      const notifBell = document.getElementById('notif-bell-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', () => notifDropdown.classList.remove('show'));
+
+      // Get Donation ID from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const donationId = urlParams.get('id');
+      const openRequestNow = urlParams.get('openRequest');
+
+      if (!donationId) {
+        showToast('Donation ID not specified', 'error');
+        setTimeout(() => window.location.href = 'available-donations.html', 1000);
+        return;
+      }
+
+      const donations = getData(STORAGE_KEYS.DONATIONS, []);
+      const donation = donations.find(d => d.id === donationId);
+
+      if (!donation) {
+        showToast('Donation not found', 'error');
+        setTimeout(() => window.location.href = 'available-donations.html', 1000);
+        return;
+      }
+
+      // Populate details
+      document.getElementById('details-item-id').textContent = `Donation ID: ${donation.id}`;
+      document.getElementById('details-item-name').textContent = donation.itemName;
+      document.getElementById('details-cat-icon').textContent = getCategoryIcon(donation.category);
+      document.getElementById('details-cat-badge').textContent = donation.category.toUpperCase();
+      document.getElementById('details-status-badge').innerHTML = getStatusBadge(donation.status);
+      document.getElementById('details-qty').textContent = donation.quantity;
+      document.getElementById('details-condition').textContent = donation.condition || 'N/A';
+      document.getElementById('details-location').textContent = `📍 ${donation.location}`;
+      document.getElementById('details-pickup').textContent = `🚚 ${donation.pickupOption}`;
+      document.getElementById('details-date').textContent = `📅 ${formatDate(donation.preferredDate)}`;
+      document.getElementById('details-desc').textContent = donation.description || 'No special instructions or description provided.';
+
+      // Extra fields
+      const extraDiv = document.getElementById('details-extra-container');
+      if (donation.category === 'food') {
+        extraDiv.innerHTML = `
+          <span class="text-xs text-muted" style="text-transform: uppercase; font-weight: 700;">Diet & Expiry</span>
+          <div style="font-weight: 600; color: var(--text-main);">
+            ${donation.isVeg ? '🥬 Vegetarian' : '🍗 Non-Vegetarian'} | Exp: <strong>${formatDate(donation.expiryDate)}</strong>
+          </div>
+        `;
+      } else if (donation.category === 'medicine') {
+        extraDiv.innerHTML = `
+          <span class="text-xs text-muted" style="text-transform: uppercase; font-weight: 700;">Expiry Date</span>
+          <div style="font-weight: 600; color: var(--danger);">
+            Exp: ${formatDate(donation.expiryDate)}
+          </div>
+        `;
+      } else if (donation.size || donation.ageGroup) {
+        extraDiv.innerHTML = `
+          <span class="text-xs text-muted" style="text-transform: uppercase; font-weight: 700;">Size / Age</span>
+          <div style="font-weight: 600; color: var(--text-main);">
+            ${donation.size || ''} ${donation.ageGroup ? `(${donation.ageGroup})` : ''}
+          </div>
+        `;
+      }
+
+      // Recipient section if requested or accepted
+      if (donation.doneeId) {
+        const recipSec = document.getElementById('details-recipient-section');
+        recipSec.style.display = 'block';
+        document.getElementById('recipient-name').textContent = `Requested by: ${donation.doneeName || 'Recipient'}`;
+        if (donation.requestDetails) {
+          document.getElementById('request-date').textContent = formatDate(donation.requestDetails.requestedAt);
+          document.getElementById('request-message').textContent = `"${donation.requestDetails.message}" (Requested Qty: ${donation.requestDetails.quantityRequested})`;
+        }
+      }
+
+      // Donor Card Info
+      document.getElementById('donor-profile-name').textContent = donation.donorName;
+      document.getElementById('donor-profile-avatar').src = donation.donorAvatar || DEFAULT_AVATARS[0];
+      document.getElementById('donor-profile-city').textContent = donation.donorCity || donation.location;
+      document.getElementById('donor-profile-phone').textContent = (donation.status === 'Accepted' || donation.status === 'Completed' || user.id === donation.donorId) ? (donation.donorPhone || 'Registered Phone') : 'Available once accepted';
+      document.getElementById('donor-profile-posted').textContent = formatDate(donation.createdAt);
+      document.getElementById('btn-chat-with-donor').href = `chat.html?userId=${donation.donorId}`;
+
+      // Update Lifecycle Progress Bar
+      updateLifecycleProgress(donation.status);
+
+      // Render Action Buttons
+      renderActionButtons(donation, user);
+
+      // Modal Handlers
+      const reqModal = document.getElementById('request-item-modal');
+      const closeReqModal = document.getElementById('close-request-modal');
+      const cancelReqBtn = document.getElementById('cancel-req-modal');
+      const submitReqBtn = document.getElementById('submit-item-req-btn');
+
+      closeReqModal.onclick = cancelReqBtn.onclick = () => reqModal.classList.remove('active');
+
+      if (openRequestNow === '1' && user.role === 'donee' && donation.status === 'Pending') {
+        openItemRequestModal(donation);
+      }
+
+      submitReqBtn.onclick = () => {
+        const qty = document.getElementById('req-quantity').value.trim();
+        const date = document.getElementById('req-date').value;
+        const loc = document.getElementById('req-location').value.trim();
+        const msg = document.getElementById('req-message').value.trim();
+
+        if (!qty || !loc || !msg) {
+          showToast('Please fill all required fields.', 'error');
+          return;
+        }
+
+        const res = requestAvailableItem(donation.id, {
+          quantity: qty,
+          preferredDate: date,
+          location: loc,
+          message: msg
+        });
+
+        if (res.success) {
+          showToast(res.message, 'success');
+          reqModal.classList.remove('active');
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showToast(res.message, 'error');
+        }
+      };
+    });
+
+    function updateLifecycleProgress(status) {
+      const s = (status || '').toLowerCase();
+      const p = document.getElementById('step-pending');
+      const r = document.getElementById('step-requested');
+      const a = document.getElementById('step-accepted');
+      const c = document.getElementById('step-completed');
+      const b1 = document.getElementById('bar-1');
+      const b2 = document.getElementById('bar-2');
+      const b3 = document.getElementById('bar-3');
+
+      if (s === 'requested') {
+        r.style.background = 'var(--accent)';
+        b1.style.background = 'var(--accent)';
+      } else if (s === 'accepted') {
+        r.style.background = 'var(--accent)';
+        a.style.background = 'var(--info)';
+        b1.style.background = 'var(--accent)';
+        b2.style.background = 'var(--info)';
+      } else if (s === 'completed') {
+        r.style.background = 'var(--accent)';
+        a.style.background = 'var(--info)';
+        c.style.background = 'var(--success)';
+        b1.style.background = 'var(--accent)';
+        b2.style.background = 'var(--info)';
+        b3.style.background = 'var(--success)';
+      }
+    }
+
+    function renderActionButtons(donation, currentUser) {
+      const bar = document.getElementById('details-actions-bar');
+      let buttonsHtml = '';
+
+      if (currentUser.role === 'donee') {
+        if (donation.status === 'Pending') {
+          buttonsHtml = `
+            <button class="btn btn-primary btn-lg" onclick="openItemRequestModal()">
+              🤲 Request This Donation Item
+            </button>
+            <a href="chat.html?userId=${donation.donorId}" class="btn btn-secondary">
+              💬 Message Donor
+            </a>
+          `;
+        } else if (donation.doneeId === currentUser.id) {
+          buttonsHtml = `
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-semibold">Status: ${donation.status}</span>
+              <a href="chat.html?userId=${donation.donorId}" class="btn btn-primary">
+                💬 Coordinate in Chat
+              </a>
+            </div>
+          `;
+        }
+      } else if (currentUser.id === donation.donorId || currentUser.role === 'admin') {
+        if (donation.status === 'Pending') {
+          buttonsHtml = `
+            <a href="donations.html" class="btn btn-secondary">Manage in My Donations</a>
+          `;
+        } else if (donation.status === 'Requested') {
+          buttonsHtml = `
+            <div class="flex gap-2">
+              <button class="btn btn-success btn-lg" onclick="handleAccept('${donation.id}')">
+                ✅ Accept Request
+              </button>
+              <button class="btn btn-danger" onclick="handleReject('${donation.id}')">
+                ⛔ Decline Request
+              </button>
+              <a href="chat.html?userId=${donation.doneeId}" class="btn btn-secondary">
+                💬 Chat with Donee
+              </a>
+            </div>
+          `;
+        } else if (donation.status === 'Accepted') {
+          buttonsHtml = `
+            <div class="flex gap-2">
+              <button class="btn btn-success btn-lg" onclick="handleComplete('${donation.id}')">
+                📦 Mark Handover as Completed
+              </button>
+              <a href="chat.html?userId=${donation.doneeId}" class="btn btn-secondary">
+                💬 Chat
+              </a>
+            </div>
+          `;
+        } else if (donation.status === 'Completed') {
+          buttonsHtml = `
+            <span class="badge badge-completed" style="font-size: 0.95rem; padding: 0.5rem 1rem;">
+              ✅ Handover Completed
+            </span>
+          `;
+        }
+      }
+
+      bar.innerHTML = buttonsHtml || `<span class="text-sm text-muted">Item Status: ${donation.status}</span>`;
+    }
+
+    function openItemRequestModal() {
+      const donations = getData(STORAGE_KEYS.DONATIONS, []);
+      const urlParams = new URLSearchParams(window.location.search);
+      const donation = donations.find(d => d.id === urlParams.get('id'));
+      const currentUser = getCurrentUser();
+
+      if (!donation) return;
+
+      document.getElementById('req-item-name').value = donation.itemName;
+      document.getElementById('req-quantity').value = donation.quantity;
+      document.getElementById('req-location').value = currentUser.city || 'Chennai';
+      document.getElementById('req-date').value = new Date().toISOString().split('T')[0];
+
+      document.getElementById('request-item-modal').classList.add('active');
+    }
+
+    function handleAccept(donationId) {
+      const res = acceptIncomingRequest(donationId);
+      if (res.success) {
+        showToast(res.message, 'success');
+        setTimeout(() => location.reload(), 1000);
+      }
+    }
+
+    function handleReject(donationId) {
+      const reason = prompt('Please enter a brief reason for declining this request (optional):');
+      const res = rejectIncomingRequest(donationId, reason || '');
+      if (res.success) {
+        showToast(res.message, 'info');
+        setTimeout(() => location.reload(), 1000);
+      }
+    }
+
+    function handleComplete(donationId) {
+      if (confirm('Confirm that the donation items have been handed over to the donee?')) {
+        const res = completeDonation(donationId);
+        if (res.success) {
+          showToast(res.message, 'success');
+          setTimeout(() => location.reload(), 1000);
+        }
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donate Now - Donation Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="donor-dashboard.html" class="sidebar-brand">
+          <div class="sidebar-brand-icon">🤝</div>
+          <span>DonationCare</span>
+        </a>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+          <img class="current-user-avatar" src="" alt="User Avatar">
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name current-user-name">Loading...</div>
+          <div class="current-user-role badge badge-role-donor">DONOR</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav">
+        <!-- Injected via script.js -->
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="javascript:void(0)" onclick="logoutUser()" class="nav-item" style="color: var(--danger);">
+          <span class="nav-item-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle-btn" title="Toggle Sidebar">☰</button>
+          <div class="page-heading">
+            <h1>Make a Donation</h1>
+            <p>Select a category below to contribute items or financial aid</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button class="topbar-action-btn theme-toggle-btn" title="Switch Theme">🌙</button>
+
+          <div style="position: relative;">
+            <button class="topbar-action-btn" id="notif-bell-btn" title="Notifications">
+              <span>🔔</span>
+              <span class="notification-count hidden">0</span>
+            </button>
+            <div class="dropdown-menu" id="notif-dropdown">
+              <div class="dropdown-header">
+                <span>Notifications</span>
+                <a href="javascript:void(0)" onclick="markAllNotificationsAsRead()" class="text-xs" style="color: var(--primary);">Mark all read</a>
+              </div>
+              <div class="dropdown-list" id="notif-dropdown-list"></div>
+              <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+                <a href="notifications.html" class="text-xs font-semibold">View All Notifications →</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="avatar-preview" style="width: 38px; height: 38px; border-width: 2px;">
+            <img class="current-user-avatar" src="" alt="Avatar">
+          </div>
+        </div>
+      </header>
+
+      <!-- App Content Area -->
+      <main class="app-content">
+
+        <!-- Category Selection Section -->
+        <div style="margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.35rem;">Step 1: Choose Donation Category</h2>
+          <p class="text-sm text-muted">Select the type of donation you wish to offer:</p>
+        </div>
+
+        <div class="category-grid" id="category-picker-grid">
+          <!-- 10 Categories generated dynamically -->
+        </div>
+
+        <!-- Dynamic Donation Form Container -->
+        <div class="card" id="donation-form-card">
+          <div class="card-header" style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%);">
+            <div class="card-title">
+              <span id="selected-cat-icon">👕</span>
+              <span id="selected-cat-title">Clothes Donation Form</span>
+            </div>
+            <span class="badge badge-pending">Status: Ready to Submit</span>
+          </div>
+
+          <div class="card-body">
+            <form id="donation-form" novalidate>
+              <input type="hidden" id="donation-category" value="clothes">
+
+              <!-- ==============================================
+                   CATEGORY SPECIFIC FIELDS CONTAINER
+                   ============================================== -->
+              <div id="dynamic-fields-container">
+                <!-- Dynamically rendered according to category selection -->
+              </div>
+
+              <!-- Common fields for all categories -->
+              <div class="form-row" style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
+                <div class="form-group">
+                  <label class="form-label" for="don-location">Location / City <span class="required">*</span></label>
+                  <input type="text" id="don-location" class="form-control" placeholder="e.g. Chennai, Central Park Area" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="don-pickup">Pickup / Delivery Option <span class="required">*</span></label>
+                  <select id="don-pickup" class="form-control">
+                    <option value="Pickup by Recipient">Pickup by Recipient</option>
+                    <option value="Self Delivery by Donor">Self Delivery by Donor</option>
+                    <option value="Courier / Logistics Service">Courier / Logistics Service</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="don-preferred-date">Preferred Handover Date <span class="required">*</span></label>
+                  <input type="date" id="don-preferred-date" class="form-control" required>
+                </div>
+              </div>
+
+              <!-- General Description -->
+              <div class="form-group">
+                <label class="form-label" for="don-description">Additional Description / Notes</label>
+                <textarea id="don-description" class="form-control" placeholder="Add helpful details about item condition, packaging, pickup instructions, etc."></textarea>
+              </div>
+
+              <div id="don-error-msg" class="form-error hidden" style="margin-bottom: 1.25rem; font-size: 0.9rem;">
+                <span>⚠️</span> <span id="don-error-text"></span>
+              </div>
+
+              <div class="flex items-center justify-between" style="margin-top: 1.5rem;">
+                <a href="donations.html" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary btn-lg" id="submit-donation-btn">
+                  <span>Publish Donation →</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = checkAuth(['donor', 'admin']);
+      if (!user) return;
+
+      renderAppChrome('donate');
+
+      // Setup Notification dropdown
+      const notifBell = document.getElementById('notif-bell-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', () => notifDropdown.classList.remove('show'));
+
+      // Check URL query parameters for prefill (e.g. from "Donate This" on community request)
+      const urlParams = new URLSearchParams(window.location.search);
+      const prefillCat = urlParams.get('prefillCat') || 'clothes';
+      const prefillItem = urlParams.get('prefillItem') || '';
+
+      // Set default date to today
+      const todayStr = new Date().toISOString().split('T')[0];
+      document.getElementById('don-preferred-date').value = todayStr;
+      document.getElementById('don-preferred-date').min = todayStr;
+      document.getElementById('don-location').value = user.city || 'Chennai';
+
+      // Render Category Selection Grid
+      const catPicker = document.getElementById('category-picker-grid');
+      catPicker.innerHTML = CATEGORIES.map(cat => `
+        <div class="category-card ${cat.id === prefillCat ? 'selected' : ''}" data-cat-id="${cat.id}">
+          <span class="category-card-icon">${cat.icon}</span>
+          <span class="category-card-name">${cat.name}</span>
+          <span class="category-card-count">${cat.desc}</span>
+        </div>
+      `).join('');
+
+      // Add click listeners to category cards
+      document.querySelectorAll('.category-card').forEach(card => {
+        card.addEventListener('click', () => {
+          document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          const catId = card.getAttribute('data-cat-id');
+          switchCategoryForm(catId);
+        });
+      });
+
+      // Initialize form for current category
+      switchCategoryForm(prefillCat, prefillItem);
+
+      // Handle Form Submit
+      const donForm = document.getElementById('donation-form');
+      donForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const errorBox = document.getElementById('don-error-msg');
+        const errorText = document.getElementById('don-error-text');
+        errorBox.classList.add('hidden');
+
+        const cat = document.getElementById('donation-category').value;
+        const location = document.getElementById('don-location').value.trim();
+        const pickupOption = document.getElementById('don-pickup').value;
+        const preferredDate = document.getElementById('don-preferred-date').value;
+        const description = document.getElementById('don-description').value.trim();
+
+        if (!location) {
+          errorText.textContent = 'Please enter the item location.';
+          errorBox.classList.remove('hidden');
+          return;
+        }
+
+        let donationData = {
+          category: cat,
+          location,
+          pickupOption,
+          preferredDate,
+          description
+        };
+
+        // Category specific extraction and validation
+        if (cat === 'money') {
+          const amount = document.getElementById('don-money-amount').value;
+          const currency = document.getElementById('don-money-currency').value;
+          const purpose = document.getElementById('don-money-purpose').value.trim();
+
+          if (!amount || Number(amount) <= 0) {
+            errorText.textContent = 'Please enter a valid donation amount.';
+            errorBox.classList.remove('hidden');
+            return;
+          }
+          donationData.amount = amount;
+          donationData.currency = currency;
+          donationData.purpose = purpose;
+          donationData.itemName = `Financial Support (${currency} ${amount})`;
+          donationData.quantity = `${currency} ${amount}`;
+        } else if (cat === 'clothes') {
+          const clothingType = document.getElementById('don-clothes-type').value.trim();
+          const quantity = document.getElementById('don-clothes-qty').value.trim();
+          const size = document.getElementById('don-clothes-size').value;
+          const ageGroup = document.getElementById('don-clothes-age').value;
+          const condition = document.getElementById('don-clothes-condition').value;
+
+          if (!clothingType || !quantity) {
+            errorText.textContent = 'Please specify clothing type and quantity.';
+            errorBox.classList.remove('hidden');
+            return;
+          }
+          donationData.itemName = clothingType;
+          donationData.quantity = quantity;
+          donationData.size = size;
+          donationData.ageGroup = ageGroup;
+          donationData.condition = condition;
+        } else if (cat === 'food') {
+          const foodType = document.getElementById('don-food-type').value.trim();
+          const quantity = document.getElementById('don-food-qty').value.trim();
+          const isVeg = document.getElementById('don-food-veg').value === 'veg';
+          const prepDate = document.getElementById('don-food-prep-date').value;
+          const expiryDate = document.getElementById('don-food-expiry-date').value;
+          const condition = document.getElementById('don-food-condition').value;
+
+          if (!foodType || !quantity || !expiryDate) {
+            errorText.textContent = 'Please fill all required food details including expiry date.';
+            errorBox.classList.remove('hidden');
+            return;
+          }
+
+          // EXPIRED FOOD CHECK
+          const exp = new Date(expiryDate);
+          const now = new Date();
+          now.setHours(0, 0, 0, 0);
+          if (exp < now) {
+            errorText.textContent = 'Expired food cannot be accepted. Please enter a valid future or current expiry date.';
+            errorBox.classList.remove('hidden');
+            return;
+          }
+
+          donationData.itemName = foodType;
+          donationData.quantity = quantity;
+          donationData.isVeg = isVeg;
+          donationData.preparationDate = prepDate;
+          donationData.expiryDate = expiryDate;
+          donationData.condition = condition;
+        } else if (cat === 'medicine') {
+          const medName = document.getElementById('don-med-name').value.trim();
+          const medType = document.getElementById('don-med-type').value;
+          const quantity = document.getElementById('don-med-qty').value.trim();
+          const expiryDate = document.getElementById('don-med-expiry-date').value;
+          const condition = document.getElementById('don-med-condition').value;
+
+          if (!medName || !quantity || !expiryDate) {
+            errorText.textContent = 'Please enter medicine name, quantity, and expiry date.';
+            errorBox.classList.remove('hidden');
+            return;
+          }
+
+          // EXPIRED MEDICINE CHECK
+          const exp = new Date(expiryDate);
+          const now = new Date();
+          now.setHours(0, 0, 0, 0);
+          if (exp < now) {
+            errorText.textContent = 'Expired medicines cannot be submitted for donation. Please provide unexpired medicines only.';
+            errorBox.classList.remove('hidden');
+            return;
+          }
+
+          donationData.itemName = medName;
+          donationData.medicineType = medType;
+          donationData.quantity = quantity;
+          donationData.expiryDate = expiryDate;
+          donationData.condition = condition;
+        } else {
+          // Other categories: books, toys, shoes, blankets, household, other
+          const itemName = document.getElementById('don-general-name').value.trim();
+          const quantity = document.getElementById('don-general-qty').value.trim();
+          const condition = document.getElementById('don-general-condition').value;
+
+          if (!itemName || !quantity) {
+            errorText.textContent = 'Please enter the item name and quantity.';
+            errorBox.classList.remove('hidden');
+            return;
+          }
+
+          donationData.itemName = itemName;
+          donationData.quantity = quantity;
+          donationData.condition = condition;
+        }
+
+        const res = createDonation(donationData);
+        if (res.success) {
+          showToast(res.message, 'success', 'Donation Published');
+          setTimeout(() => {
+            window.location.href = 'donations.html';
+          }, 1000);
+        } else {
+          errorText.textContent = res.message;
+          errorBox.classList.remove('hidden');
+        }
+      });
+    });
+
+    function switchCategoryForm(catId, prefillItem = '') {
+      const catObj = CATEGORIES.find(c => c.id === catId) || CATEGORIES[0];
+      document.getElementById('donation-category').value = catObj.id;
+      document.getElementById('selected-cat-icon').textContent = catObj.icon;
+      document.getElementById('selected-cat-title').textContent = `${catObj.name} Donation Form`;
+
+      const container = document.getElementById('dynamic-fields-container');
+      const today = new Date().toISOString().split('T')[0];
+
+      if (catObj.id === 'money') {
+        container.innerHTML = `
+          <div class="card" style="margin-bottom: 1.25rem; background-color: var(--primary-light); border-color: var(--primary-border);">
+            <div class="card-body flex items-center justify-between">
+              <div>
+                <strong>💳 Payment Status: Simulated / Pending</strong>
+                <p class="text-xs text-muted" style="margin-top: 2px;">This is a frontend demonstration platform. Financial contributions will be logged in simulated state.</p>
+              </div>
+              <span class="badge badge-accepted">Simulated Escrow</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="don-money-amount">Donation Amount <span class="required">*</span></label>
+              <input type="number" id="don-money-amount" class="form-control" placeholder="e.g. 50, 100, 500" min="1" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="don-money-currency">Currency <span class="required">*</span></label>
+              <select id="don-money-currency" class="form-control">
+                <option value="INR" selected>INR (₹)</option>
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="don-money-purpose">Purpose / Relief Cause</label>
+            <input type="text" id="don-money-purpose" class="form-control" placeholder="e.g. Child education fund, emergency medical treatment, disaster relief">
+          </div>
+        `;
+      } else if (catObj.id === 'clothes') {
+        container.innerHTML = `
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="don-clothes-type">Clothing Type <span class="required">*</span></label>
+              <input type="text" id="don-clothes-type" class="form-control" placeholder="e.g. Warm Sweaters, Cotton Shirts, Trousers" value="${prefillItem}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="don-clothes-qty">Quantity <span class="required">*</span></label>
+              <input type="text" id="don-clothes-qty" class="form-control" placeholder="e.g. 5 pieces, 2 bags" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="don-clothes-size">Size</label>
+              <select id="don-clothes-size" class="form-control">
+                <option value="Assorted / Mixed">Assorted / Mixed Sizes</option>
+                <option value="Small (S)">Small (S)</option>
+                <option value="Medium (M)">Medium (M)</option>
+                <option value="Large (L)">Large (L)</option>
+                <option value="Extra Large (XL)">Extra Large (XL)</option>
+                <option value="Kids Free Size">Kids Free Size</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="don-clothes-age">Target Age Group</label>
+              <select id="don-clothes-age" class="form-control">
+                <option value="All Ages">All Ages</option>
+                <option value="Infants & Toddlers (0-3)">Infants & Toddlers (0-3)</option>
+                <option value="Children (4-12)">Children (4-12)</option>
+                <option value="Teens (13-18)">Teens (13-18)</option>
+                <option value="Adults">Adults</option>
+                <option value="Seniors">Seniors</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="don-clothes-condition">Condition <span class="required">*</span></label>
+              <select id="don-clothes-condition" class="form-control">
+                <option value="Brand New">Brand New / Unworn</option>
+                <option value="Gently Used">Gently Used / Like New</option>
+                <option value="Good Condition">Good Condition (Clean & Washed)</option>
+              </select>
+            </div>
+          </div>
+        `;
+      } else if (catObj.id === 'food') {
+        container.innerHTML = `
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="don-food-type">Food Item / Type <span class="required">*</span></label>
+              <input type="text" id="don-food-type" class="form-control" placeholder="e.g. Cooked Rice Meals, Raw Rice 10kg, Wheat Flour, Dal" value="${prefillItem}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="don-food-qty">Quantity <span class="required">*</span></label>
+              <input type="text" id="don-food-qty" class="form-control" placeholder="e.g. 25 meal packets, 10 kg, 5 boxes" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="don-food-veg">Dietary Preference <span class="required">*</span></label>
+              <select id="don-food-veg" class="form-control">
+                <option value="veg">🥬 Vegetarian</option>
+                <option value="non-veg">🍗 Non-Vegetarian</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="don-food-prep-date">Preparation / Packaging Date</label>
+              <input type="date" id="don-food-prep-date" class="form-control" value="${today}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="don-food-expiry-date">Expiry Date / Best Before <span class="required">*</span></label>
+              <input type="date" id="don-food-expiry-date" class="form-control" min="${today}" required>
+              <span class="form-help" style="color: var(--danger);">⚠️ System strictly rejects expired food items.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="don-food-condition">Condition</label>
+              <select id="don-food-condition" class="form-control">
+                <option value="Freshly Cooked & Sealed">Freshly Cooked & Sealed</option>
+                <option value="Sealed Retail Packaging">Sealed Retail Packaging</option>
+                <option value="Dry Grains / Sealed Bag">Dry Grains / Sealed Bag</option>
+              </select>
+            </div>
+          </div>
+        `;
+      } else if (catObj.id === 'medicine') {
+        container.innerHTML = `
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="don-med-name">Medicine Name <span class="required">*</span></label>
+              <input type="text" id="don-med-name" class="form-control" placeholder="e.g. Paracetamol 500mg, First Aid Kit, ORS Packets" value="${prefillItem}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="don-med-type">Medicine Type</label>
+              <select id="don-med-type" class="form-control">
+                <option value="Tablets / Strips">Tablets / Capsules Strips</option>
+                <option value="Syrup / Liquid">Syrup / Suspension</option>
+                <option value="First Aid Supplies">First Aid Supplies & Bandages</option>
+                <option value="Medical Equipment">Medical Equipment (BP Monitor, Oximeter)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="don-med-qty">Quantity <span class="required">*</span></label>
+              <input type="text" id="don-med-qty" class="form-control" placeholder="e.g. 5 strips, 3 bottles, 1 kit" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="don-med-expiry-date">Expiry Date <span class="required">*</span></label>
+              <input type="date" id="don-med-expiry-date" class="form-control" min="${today}" required>
+              <span class="form-help" style="color: var(--danger);">⚠️ Medicines with past expiry dates cannot be submitted.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="don-med-condition">Condition <span class="required">*</span></label>
+              <select id="don-med-condition" class="form-control">
+                <option value="Unopened / Sealed Foil">Unopened / Sealed Foil</option>
+                <option value="Intact Packaging">Intact Packaging</option>
+              </select>
+            </div>
+          </div>
+        `;
+      } else {
+        // Books, Toys, Shoes, Blankets, Household, Other
+        container.innerHTML = `
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="don-general-name">Item Name <span class="required">*</span></label>
+              <input type="text" id="don-general-name" class="form-control" placeholder="e.g. ${catObj.desc.split(',')[0]}" value="${prefillItem}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="don-general-qty">Quantity <span class="required">*</span></label>
+              <input type="text" id="don-general-qty" class="form-control" placeholder="e.g. 10 items, 2 pairs, 4 sets" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="don-general-condition">Condition <span class="required">*</span></label>
+              <select id="don-general-condition" class="form-control">
+                <option value="Brand New">Brand New</option>
+                <option value="Like New / Gentle Use">Like New / Gentle Use</option>
+                <option value="Good Functional Condition">Good Functional Condition</option>
+              </select>
+            </div>
+          </div>
+        `;
+      }
+    }
+  </script>
+</body>
+</html>

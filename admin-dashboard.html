@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal - Donation Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="admin-dashboard.html" class="sidebar-brand">
+          <div class="sidebar-brand-icon" style="background: linear-gradient(135deg, var(--accent) 0%, #db2777 100%);">🛡️</div>
+          <span>AdminPanel</span>
+        </a>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+          <img class="current-user-avatar" src="" alt="Admin Avatar">
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name current-user-name">Administrator</div>
+          <div class="current-user-role badge badge-role-admin">SYSTEM ADMIN</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav">
+        <!-- Injected via script.js -->
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="javascript:void(0)" onclick="logoutUser()" class="nav-item" style="color: var(--danger);">
+          <span class="nav-item-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle-btn" title="Toggle Sidebar">☰</button>
+          <div class="page-heading">
+            <h1>Platform Administration</h1>
+            <p>System oversight, user management, and moderation controls</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Theme toggle -->
+          <button class="topbar-action-btn theme-toggle-btn" title="Switch Theme">🌙</button>
+
+          <!-- Notification Bell -->
+          <div style="position: relative;">
+            <button class="topbar-action-btn" id="notif-bell-btn" title="Notifications">
+              <span>🔔</span>
+              <span class="notification-count hidden">0</span>
+            </button>
+            <div class="dropdown-menu" id="notif-dropdown">
+              <div class="dropdown-header">
+                <span>System Alerts</span>
+                <a href="javascript:void(0)" onclick="markAllNotificationsAsRead()" class="text-xs" style="color: var(--primary);">Mark all read</a>
+              </div>
+              <div class="dropdown-list" id="notif-dropdown-list">
+                <!-- Notifications injected dynamically -->
+              </div>
+              <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+                <a href="notifications.html" class="text-xs font-semibold">View All Alerts →</a>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: 0.5rem;">
+            <div class="avatar-preview" style="width: 38px; height: 38px; border-width: 2px;">
+              <img class="current-user-avatar" src="" alt="Avatar">
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- App Content Area -->
+      <main class="app-content">
+
+        <!-- 10 Admin Statistic Metric Cards -->
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));">
+          <div class="stat-card stat-primary">
+            <div class="stat-info-text">
+              <span class="stat-label">Total Users</span>
+              <span class="stat-value" id="adm-total-users">0</span>
+            </div>
+            <div class="stat-icon">👥</div>
+          </div>
+
+          <div class="stat-card stat-info">
+            <div class="stat-info-text">
+              <span class="stat-label">Donors</span>
+              <span class="stat-value" id="adm-total-donors">0</span>
+            </div>
+            <div class="stat-icon">🎁</div>
+          </div>
+
+          <div class="stat-card stat-accent">
+            <div class="stat-info-text">
+              <span class="stat-label">Donees</span>
+              <span class="stat-value" id="adm-total-donees">0</span>
+            </div>
+            <div class="stat-icon">🤲</div>
+          </div>
+
+          <div class="stat-card stat-primary">
+            <div class="stat-info-text">
+              <span class="stat-label">Donations</span>
+              <span class="stat-value" id="adm-total-donations">0</span>
+            </div>
+            <div class="stat-icon">📦</div>
+          </div>
+
+          <div class="stat-card stat-warning">
+            <div class="stat-info-text">
+              <span class="stat-label">Pending Don.</span>
+              <span class="stat-value" id="adm-pending-donations">0</span>
+            </div>
+            <div class="stat-icon">⏳</div>
+          </div>
+
+          <div class="stat-card stat-accent">
+            <div class="stat-info-text">
+              <span class="stat-label">Accepted Don.</span>
+              <span class="stat-value" id="adm-accepted-donations">0</span>
+            </div>
+            <div class="stat-icon">🤝</div>
+          </div>
+
+          <div class="stat-card stat-success">
+            <div class="stat-info-text">
+              <span class="stat-label">Completed Don.</span>
+              <span class="stat-value" id="adm-completed-donations">0</span>
+            </div>
+            <div class="stat-icon">✅</div>
+          </div>
+
+          <div class="stat-card stat-info">
+            <div class="stat-info-text">
+              <span class="stat-label">Total Requests</span>
+              <span class="stat-value" id="adm-total-requests">0</span>
+            </div>
+            <div class="stat-icon">📋</div>
+          </div>
+
+          <div class="stat-card stat-warning">
+            <div class="stat-info-text">
+              <span class="stat-label">Pending Req.</span>
+              <span class="stat-value" id="adm-pending-requests">0</span>
+            </div>
+            <div class="stat-icon">⌛</div>
+          </div>
+
+          <div class="stat-card stat-success">
+            <div class="stat-info-text">
+              <span class="stat-label">Active Chats</span>
+              <span class="stat-value" id="adm-active-chats">0</span>
+            </div>
+            <div class="stat-icon">💬</div>
+          </div>
+        </div>
+
+        <!-- 1. USER MANAGEMENT SECTION -->
+        <div class="card" id="users-section" style="margin-bottom: 2rem;">
+          <div class="card-header">
+            <div class="card-title">
+              <span>👥 User Management</span>
+            </div>
+            <div class="flex gap-2">
+              <input type="text" id="adm-user-search" class="form-control" placeholder="Search user name, email, phone..." style="width: 240px; padding: 0.4rem 0.75rem; font-size: 0.85rem;">
+              <select id="adm-user-filter" class="filter-select">
+                <option value="all">All Roles</option>
+                <option value="donor">Donors Only</option>
+                <option value="donee">Donees Only</option>
+                <option value="active">Active Only</option>
+                <option value="inactive">Inactive Only</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>User ID</th>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Role</th>
+                    <th>City</th>
+                    <th>Joined</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-users-table-body">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. DONATION MANAGEMENT SECTION -->
+        <div class="card" id="donations-section" style="margin-bottom: 2rem;">
+          <div class="card-header">
+            <div class="card-title">
+              <span>🎁 Donation Moderation & Records</span>
+            </div>
+            <div class="flex gap-2">
+              <select id="adm-donation-filter" class="filter-select">
+                <option value="all">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="Requested">Requested</option>
+                <option value="Accepted">Accepted</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Donation ID</th>
+                    <th>Donor</th>
+                    <th>Item</th>
+                    <th>Category</th>
+                    <th>Quantity / Amount</th>
+                    <th>Location</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Admin Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-donations-table-body">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. REQUEST MANAGEMENT SECTION -->
+        <div class="card" id="requests-section">
+          <div class="card-header">
+            <div class="card-title">
+              <span>📋 Request Management & Approval</span>
+            </div>
+            <div class="flex gap-2">
+              <select id="adm-request-filter" class="filter-select">
+                <option value="all">All Requests</option>
+                <option value="Pending">Pending</option>
+                <option value="Accepted">Accepted</option>
+                <option value="Completed">Completed</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Request ID</th>
+                    <th>Donee</th>
+                    <th>Requested Item</th>
+                    <th>Qty</th>
+                    <th>Location</th>
+                    <th>Urgency</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Admin Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-requests-table-body">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = checkAuth(['admin']);
+      if (!user) return;
+
+      renderAppChrome('dashboard');
+
+      // Setup Notification bell toggle
+      const notifBell = document.getElementById('notif-bell-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', () => notifDropdown.classList.remove('show'));
+
+      // Render Admin Data
+      loadAdminStatistics();
+      loadAdminUsers();
+      loadAdminDonations();
+      loadAdminRequests();
+
+      // Search & Filter Listeners
+      document.getElementById('adm-user-search').addEventListener('input', loadAdminUsers);
+      document.getElementById('adm-user-filter').addEventListener('change', loadAdminUsers);
+      document.getElementById('adm-donation-filter').addEventListener('change', loadAdminDonations);
+      document.getElementById('adm-request-filter').addEventListener('change', loadAdminRequests);
+    });
+
+    function loadAdminStatistics() {
+      const users = getData(STORAGE_KEYS.USERS, []);
+      const donations = getData(STORAGE_KEYS.DONATIONS, []);
+      const requests = getData(STORAGE_KEYS.REQUESTS, []);
+      const chats = getData(STORAGE_KEYS.CHATS, []);
+
+      document.getElementById('adm-total-users').textContent = users.length;
+      document.getElementById('adm-total-donors').textContent = users.filter(u => u.role === 'donor').length;
+      document.getElementById('adm-total-donees').textContent = users.filter(u => u.role === 'donee').length;
+      
+      document.getElementById('adm-total-donations').textContent = donations.length;
+      document.getElementById('adm-pending-donations').textContent = donations.filter(d => d.status === 'Pending').length;
+      document.getElementById('adm-accepted-donations').textContent = donations.filter(d => d.status === 'Accepted').length;
+      document.getElementById('adm-completed-donations').textContent = donations.filter(d => d.status === 'Completed').length;
+
+      document.getElementById('adm-total-requests').textContent = requests.length;
+      document.getElementById('adm-pending-requests').textContent = requests.filter(r => r.status === 'Pending').length;
+      document.getElementById('adm-active-chats').textContent = chats.length;
+    }
+
+    function loadAdminUsers() {
+      const users = getData(STORAGE_KEYS.USERS, []);
+      const q = document.getElementById('adm-user-search').value.trim().toLowerCase();
+      const filter = document.getElementById('adm-user-filter').value;
+      const tbody = document.getElementById('adm-users-table-body');
+
+      const filtered = users.filter(u => {
+        if (q) {
+          const match = u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.phone.includes(q);
+          if (!match) return false;
+        }
+        if (filter === 'donor') return u.role === 'donor';
+        if (filter === 'donee') return u.role === 'donee';
+        if (filter === 'active') return u.status === 'active';
+        if (filter === 'inactive') return u.status === 'inactive';
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted" style="padding: 2rem;">No matching registered users.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(u => `
+        <tr>
+          <td style="font-family: var(--font-mono); font-size: 0.8rem;">${u.id}</td>
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="donor-avatar-small"><img src="${u.avatar || DEFAULT_AVATARS[0]}" alt="${u.name}"></div>
+              <span style="font-weight: 600;">${u.name}</span>
+            </div>
+          </td>
+          <td>${u.email}</td>
+          <td>${u.phone}</td>
+          <td><span class="badge badge-role-${u.role}">${u.role}</span></td>
+          <td>${u.city || 'N/A'}</td>
+          <td>${formatDate(u.createdAt)}</td>
+          <td>
+            <span class="badge ${u.status === 'inactive' ? 'badge-rejected' : 'badge-completed'}">
+              ${u.status || 'active'}
+            </span>
+          </td>
+          <td>
+            <div class="flex gap-1">
+              ${u.status === 'inactive' 
+                ? `<button class="btn btn-success btn-sm" onclick="toggleUserStatus('${u.id}', 'active')">Activate</button>`
+                : `<button class="btn btn-secondary btn-sm" onclick="toggleUserStatus('${u.id}', 'inactive')">Deactivate</button>`}
+              <button class="btn btn-outline-danger btn-sm" onclick="removeUser('${u.id}')">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function toggleUserStatus(userId, newStatus) {
+      updateData(STORAGE_KEYS.USERS, userId, { status: newStatus });
+      showToast(`User status set to ${newStatus}`, 'info');
+      loadAdminUsers();
+      loadAdminStatistics();
+    }
+
+    function removeUser(userId) {
+      if (confirm('Are you sure you want to delete this user record permanently?')) {
+        deleteData(STORAGE_KEYS.USERS, userId);
+        showToast('User record removed', 'warning');
+        loadAdminUsers();
+        loadAdminStatistics();
+      }
+    }
+
+    function loadAdminDonations() {
+      const donations = getData(STORAGE_KEYS.DONATIONS, []);
+      const filter = document.getElementById('adm-donation-filter').value;
+      const tbody = document.getElementById('adm-donations-table-body');
+
+      const filtered = donations.filter(d => filter === 'all' || d.status === filter);
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted" style="padding: 2rem;">No donation records matching filter.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(d => `
+        <tr>
+          <td style="font-family: var(--font-mono); font-size: 0.8rem;">${d.id}</td>
+          <td>${d.donorName}</td>
+          <td style="font-weight: 600;">${d.itemName}</td>
+          <td>${getCategoryIcon(d.category)} ${d.category}</td>
+          <td>${d.quantity}</td>
+          <td>📍 ${d.location}</td>
+          <td>${formatDate(d.createdAt)}</td>
+          <td>${getStatusBadge(d.status)}</td>
+          <td>
+            <div class="flex gap-1">
+              <a href="donation-details.html?id=${d.id}" class="btn btn-secondary btn-sm">View</a>
+              ${d.status === 'Pending' ? `
+                <button class="btn btn-success btn-sm" onclick="admApproveDonation('${d.id}')">Approve</button>
+                <button class="btn btn-danger btn-sm" onclick="admRejectDonation('${d.id}')">Reject</button>
+              ` : ''}
+              <button class="btn btn-outline-danger btn-sm" onclick="admDeleteDonation('${d.id}')">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function admApproveDonation(id) {
+      updateData(STORAGE_KEYS.DONATIONS, id, { status: 'Pending' });
+      showToast('Donation verified & approved for public listing', 'success');
+      loadAdminDonations();
+      loadAdminStatistics();
+    }
+
+    function admRejectDonation(id) {
+      updateData(STORAGE_KEYS.DONATIONS, id, { status: 'Rejected' });
+      showToast('Donation rejected', 'warning');
+      loadAdminDonations();
+      loadAdminStatistics();
+    }
+
+    function admDeleteDonation(id) {
+      if (confirm('Delete this donation record?')) {
+        deleteData(STORAGE_KEYS.DONATIONS, id);
+        showToast('Donation record deleted', 'info');
+        loadAdminDonations();
+        loadAdminStatistics();
+      }
+    }
+
+    function loadAdminRequests() {
+      const requests = getData(STORAGE_KEYS.REQUESTS, []);
+      const filter = document.getElementById('adm-request-filter').value;
+      const tbody = document.getElementById('adm-requests-table-body');
+
+      const filtered = requests.filter(r => filter === 'all' || r.status === filter);
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted" style="padding: 2rem;">No request records found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(r => `
+        <tr>
+          <td style="font-family: var(--font-mono); font-size: 0.8rem;">${r.id}</td>
+          <td>${r.doneeName}</td>
+          <td style="font-weight: 600;">${r.itemName}</td>
+          <td>${r.quantityRequired}</td>
+          <td>📍 ${r.location}</td>
+          <td><span class="badge badge-urgency-${r.urgency.toLowerCase()}">${r.urgency}</span></td>
+          <td>${formatDate(r.createdAt)}</td>
+          <td>${getStatusBadge(r.status)}</td>
+          <td>
+            <div class="flex gap-1">
+              ${r.status === 'Pending' ? `
+                <button class="btn btn-success btn-sm" onclick="admApproveReq('${r.id}')">Approve</button>
+                <button class="btn btn-danger btn-sm" onclick="admRejectReq('${r.id}')">Reject</button>
+              ` : ''}
+              <button class="btn btn-outline-danger btn-sm" onclick="admDeleteReq('${r.id}')">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function admApproveReq(id) {
+      updateData(STORAGE_KEYS.REQUESTS, id, { status: 'Pending' });
+      showToast('Request approved and made public to donors', 'success');
+      loadAdminRequests();
+      loadAdminStatistics();
+    }
+
+    function admRejectReq(id) {
+      updateData(STORAGE_KEYS.REQUESTS, id, { status: 'Rejected' });
+      showToast('Request rejected by administrator', 'warning');
+      loadAdminRequests();
+      loadAdminStatistics();
+    }
+
+    function admDeleteReq(id) {
+      if (confirm('Delete this request entry?')) {
+        deleteData(STORAGE_KEYS.REQUESTS, id);
+        showToast('Request deleted', 'info');
+        loadAdminRequests();
+        loadAdminStatistics();
+      }
+    }
+  </script>
+</body>
+</html>

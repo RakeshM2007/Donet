@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Donation Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="auth-wrapper">
+    <div class="auth-container">
+      <div class="auth-brand">
+        <div class="brand-logo-icon">🤝</div>
+        <h1 class="brand-title">Donation<span>Care</span></h1>
+        <p class="brand-subtitle">Smart Donation Management System</p>
+      </div>
+
+      <div style="margin-bottom: 1.5rem; text-align: center;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main);">Welcome Back</h2>
+        <p class="text-sm text-muted">Sign in with your registered account to continue</p>
+      </div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email or Username <span class="required">*</span></label>
+          <input type="text" id="login-email" class="form-control" placeholder="Enter your email or full name" required autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <div class="flex items-center justify-between" style="margin-bottom: 0.4rem;">
+            <label class="form-label" for="login-password" style="margin-bottom: 0;">Password <span class="required">*</span></label>
+            <a href="javascript:void(0)" id="forgot-password-link" class="text-xs" style="font-weight: 600;">Forgot Password?</a>
+          </div>
+          <div class="input-group">
+            <input type="password" id="login-password" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
+            <button type="button" class="input-group-btn" id="toggle-pwd-btn" title="Show or Hide Password">
+              <span id="eye-icon">👁️</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="login-error" class="form-error hidden" style="margin-bottom: 1rem;">
+          <span>⚠️</span> <span id="login-error-msg"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full" id="btn-login-submit" style="padding: 0.75rem;">
+          Sign In to Dashboard
+        </button>
+      </form>
+
+      <div class="auth-switch">
+        <span>Don't have an account yet?</span>
+        <a href="register.html" style="font-weight: 700; margin-left: 0.25rem;">Create Account</a>
+      </div>
+
+      <div style="margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color); text-align: center;">
+        <span class="text-xs text-muted">🔒 Frontend-only LocalStorage platform. College Project DMS.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div class="modal-overlay" id="forgot-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Reset Your Password</h3>
+        <button class="modal-close-btn" id="close-forgot-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="text-sm text-muted" style="margin-bottom: 1.25rem;">
+          Enter your registered email address. Since this system operates on localStorage, you can securely set a new password here.
+        </p>
+        <div class="form-group">
+          <label class="form-label" for="forgot-email">Registered Email</label>
+          <input type="email" id="forgot-email" class="form-control" placeholder="name@example.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="forgot-new-pwd">New Password (min 6 characters)</label>
+          <input type="password" id="forgot-new-pwd" class="form-control" placeholder="••••••••" required>
+        </div>
+        <div id="forgot-status" class="form-error hidden"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" id="cancel-forgot-btn">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" id="save-new-pwd-btn">Update Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Passkey Verification Modal -->
+  <div class="modal-overlay" id="admin-passkey-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">🛡️ Admin Verification Required</h3>
+        <button class="modal-close-btn" id="close-admin-key-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="text-sm text-muted" style="margin-bottom: 1.25rem;">
+          This account possesses Administrative privileges. Please enter the confidential Admin Passkey to verify your authorization and access the Admin Portal.
+        </p>
+        <div class="form-group">
+          <label class="form-label" for="admin-verify-passkey">Admin Passkey <span class="required">*</span></label>
+          <input type="password" id="admin-verify-passkey" class="form-control" placeholder="Enter Admin Passkey" autocomplete="off">
+        </div>
+        <div id="admin-key-error" class="form-error hidden"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" id="cancel-admin-key-btn">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" id="submit-admin-key-btn">Verify & Sign In</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // If user already logged in, redirect to their role dashboard
+      const existingUser = getCurrentUser();
+      if (existingUser) {
+        if (existingUser.role === 'donor') window.location.href = 'donor-dashboard.html';
+        else if (existingUser.role === 'donee') window.location.href = 'donee-dashboard.html';
+        else if (existingUser.role === 'admin') window.location.href = 'admin-dashboard.html';
+      }
+
+      // Password Toggle
+      const pwdInput = document.getElementById('login-password');
+      const togglePwdBtn = document.getElementById('toggle-pwd-btn');
+      const eyeIcon = document.getElementById('eye-icon');
+      
+      togglePwdBtn.addEventListener('click', () => {
+        if (pwdInput.type === 'password') {
+          pwdInput.type = 'text';
+          eyeIcon.textContent = '🙈';
+        } else {
+          pwdInput.type = 'password';
+          eyeIcon.textContent = '👁️';
+        }
+      });
+
+      // Login form submission
+      const loginForm = document.getElementById('login-form');
+      const errorBox = document.getElementById('login-error');
+      const errorMsg = document.getElementById('login-error-msg');
+
+      let pendingAdminEmail = '';
+      let pendingAdminPwd = '';
+
+      const adminModal = document.getElementById('admin-passkey-modal');
+      const closeAdminModal = document.getElementById('close-admin-key-modal');
+      const cancelAdminBtn = document.getElementById('cancel-admin-key-btn');
+      const submitAdminBtn = document.getElementById('submit-admin-key-btn');
+      const adminPasskeyInput = document.getElementById('admin-verify-passkey');
+      const adminKeyError = document.getElementById('admin-key-error');
+
+      closeAdminModal.onclick = cancelAdminBtn.onclick = () => {
+        adminModal.classList.remove('active');
+        adminKeyError.classList.add('hidden');
+        adminPasskeyInput.value = '';
+      };
+
+      submitAdminBtn.onclick = () => {
+        const passkey = adminPasskeyInput.value.trim();
+        if (!passkey) {
+          adminKeyError.textContent = 'Please enter the Admin Passkey.';
+          adminKeyError.classList.remove('hidden');
+          return;
+        }
+
+        const adminRes = loginUser(pendingAdminEmail, pendingAdminPwd, passkey);
+        if (adminRes.success) {
+          adminModal.classList.remove('active');
+          showToast(`Welcome Administrator, ${adminRes.user.name}!`, 'success', 'Admin Verification Succeeded');
+          setTimeout(() => {
+            window.location.href = 'admin-dashboard.html';
+          }, 600);
+        } else {
+          adminKeyError.textContent = 'Invalid Admin Passkey. Access denied.';
+          adminKeyError.classList.remove('hidden');
+        }
+      };
+
+      adminPasskeyInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') submitAdminBtn.click();
+      });
+
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        errorBox.classList.add('hidden');
+
+        const email = document.getElementById('login-email').value.trim();
+        const pwd = pwdInput.value;
+
+        if (!email || !pwd) {
+          errorMsg.textContent = 'Please provide both email/username and password.';
+          errorBox.classList.remove('hidden');
+          return;
+        }
+
+        const res = loginUser(email, pwd);
+
+        if (res.requireAdminPasskey) {
+          pendingAdminEmail = email;
+          pendingAdminPwd = pwd;
+          adminPasskeyInput.value = '';
+          adminKeyError.classList.add('hidden');
+          adminModal.classList.add('active');
+          adminPasskeyInput.focus();
+          return;
+        }
+
+        if (res.success) {
+          showToast(`Welcome back, ${res.user.name}!`, 'success', 'Login Successful');
+          setTimeout(() => {
+            if (res.user.role === 'donor') {
+              window.location.href = 'donor-dashboard.html';
+            } else if (res.user.role === 'donee') {
+              window.location.href = 'donee-dashboard.html';
+            } else if (res.user.role === 'admin') {
+              window.location.href = 'admin-dashboard.html';
+            }
+          }, 600);
+        } else {
+          errorMsg.textContent = res.message;
+          errorBox.classList.remove('hidden');
+        }
+      });
+
+      // Forgot Password Modal Handlers
+      const forgotModal = document.getElementById('forgot-modal');
+      const forgotLink = document.getElementById('forgot-password-link');
+      const closeForgotModal = document.getElementById('close-forgot-modal');
+      const cancelForgotBtn = document.getElementById('cancel-forgot-btn');
+      const saveNewPwdBtn = document.getElementById('save-new-pwd-btn');
+      const forgotStatus = document.getElementById('forgot-status');
+
+      forgotLink.onclick = () => forgotModal.classList.add('active');
+      closeForgotModal.onclick = cancelForgotBtn.onclick = () => {
+        forgotModal.classList.remove('active');
+        forgotStatus.classList.add('hidden');
+      };
+
+      saveNewPwdBtn.onclick = () => {
+        const email = document.getElementById('forgot-email').value.trim().toLowerCase();
+        const newPwd = document.getElementById('forgot-new-pwd').value;
+
+        if (!email || !newPwd) {
+          forgotStatus.textContent = 'Please fill in both fields.';
+          forgotStatus.className = 'form-error';
+          forgotStatus.classList.remove('hidden');
+          return;
+        }
+
+        if (newPwd.length < 6) {
+          forgotStatus.textContent = 'New password must be at least 6 characters.';
+          forgotStatus.className = 'form-error';
+          forgotStatus.classList.remove('hidden');
+          return;
+        }
+
+        const users = getData(STORAGE_KEYS.USERS, []);
+        const user = users.find(u => u.email.toLowerCase() === email);
+
+        if (!user) {
+          forgotStatus.textContent = 'No account found with this email. Please register first.';
+          forgotStatus.className = 'form-error';
+          forgotStatus.classList.remove('hidden');
+          return;
+        }
+
+        user.password = newPwd;
+        saveData(STORAGE_KEYS.USERS, users);
+        forgotStatus.textContent = 'Password reset successfully! You can now log in.';
+        forgotStatus.className = 'form-help';
+        forgotStatus.style.color = 'var(--success)';
+        forgotStatus.classList.remove('hidden');
+
+        setTimeout(() => {
+          forgotModal.classList.remove('active');
+          document.getElementById('login-password').value = newPwd;
+          document.getElementById('login-email').value = email;
+          showToast('Password updated. Please log in.', 'success');
+        }, 1200);
+      };
+    });
+  </script>
+</body>
+</html>

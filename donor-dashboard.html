@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donor Dashboard - Donation Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="donor-dashboard.html" class="sidebar-brand">
+          <div class="sidebar-brand-icon">🤝</div>
+          <span>DonationCare</span>
+        </a>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+          <img class="current-user-avatar" src="" alt="User Avatar">
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name current-user-name">Loading...</div>
+          <div class="current-user-role badge badge-role-donor">DONOR</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav">
+        <!-- Injected via script.js -->
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="javascript:void(0)" onclick="logoutUser()" class="nav-item" style="color: var(--danger);">
+          <span class="nav-item-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle-btn" title="Toggle Sidebar">☰</button>
+          <div class="page-heading">
+            <h1>Donor Dashboard</h1>
+            <p>Welcome back, manage your donations and support those in need</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <a href="donate.html" class="btn btn-primary btn-sm">
+            <span>+ Donate Now</span>
+          </a>
+
+          <!-- Theme toggle -->
+          <button class="topbar-action-btn theme-toggle-btn" title="Switch Theme">🌙</button>
+
+          <!-- Notification Dropdown -->
+          <div style="position: relative;">
+            <button class="topbar-action-btn" id="notif-bell-btn" title="Notifications">
+              <span>🔔</span>
+              <span class="notification-count hidden">0</span>
+            </button>
+            <div class="dropdown-menu" id="notif-dropdown">
+              <div class="dropdown-header">
+                <span>Notifications</span>
+                <a href="javascript:void(0)" onclick="markAllNotificationsAsRead()" class="text-xs" style="color: var(--primary);">Mark all read</a>
+              </div>
+              <div class="dropdown-list" id="notif-dropdown-list">
+                <!-- Notifications injected dynamically -->
+              </div>
+              <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+                <a href="notifications.html" class="text-xs font-semibold">View All Notifications →</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Menu Dropdown -->
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: 0.5rem;">
+            <div class="avatar-preview" style="width: 38px; height: 38px; border-width: 2px;">
+              <img class="current-user-avatar" src="" alt="Avatar">
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- App Content Area -->
+      <main class="app-content">
+        <!-- Quick Stats Cards -->
+        <div class="stats-grid">
+          <div class="stat-card stat-primary">
+            <div class="stat-info-text">
+              <span class="stat-label">Total Donations</span>
+              <span class="stat-value" id="stat-total-donations">0</span>
+            </div>
+            <div class="stat-icon">📦</div>
+          </div>
+
+          <div class="stat-card stat-warning">
+            <div class="stat-info-text">
+              <span class="stat-label">Pending Donations</span>
+              <span class="stat-value" id="stat-pending-donations">0</span>
+            </div>
+            <div class="stat-icon">⏳</div>
+          </div>
+
+          <div class="stat-card stat-accent">
+            <div class="stat-info-text">
+              <span class="stat-label">Accepted Donations</span>
+              <span class="stat-value" id="stat-accepted-donations">0</span>
+            </div>
+            <div class="stat-icon">🤝</div>
+          </div>
+
+          <div class="stat-card stat-success">
+            <div class="stat-info-text">
+              <span class="stat-label">Completed Handed Over</span>
+              <span class="stat-value" id="stat-completed-donations">0</span>
+            </div>
+            <div class="stat-icon">✅</div>
+          </div>
+        </div>
+
+        <!-- Quick Categories Banner -->
+        <div class="card" style="margin-bottom: 1.75rem; background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%);">
+          <div class="card-body flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">
+                Have items you wish to share?
+              </h3>
+              <p class="text-sm text-muted">
+                Choose clothes, food, medicine, money, books, and more to donate directly to verified recipients.
+              </p>
+            </div>
+            <div class="flex gap-2">
+              <a href="donate.html" class="btn btn-primary">Make a Donation</a>
+              <a href="requests.html?tab=available" class="btn btn-secondary">View Urgent Donee Requests</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Two Column Activity Section -->
+        <div class="grid grid-cols-2 gap-6" style="margin-bottom: 1.75rem;">
+          <!-- Recent Incoming Requests -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📩 Incoming Requests For You</span>
+              <a href="requests.html" class="text-xs font-semibold">View All →</a>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <div class="table-responsive">
+                <table class="custom-table" id="table-incoming-requests">
+                  <thead>
+                    <tr>
+                      <th>Donee</th>
+                      <th>Requested Item</th>
+                      <th>Qty</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="incoming-requests-body">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+              <div id="incoming-empty" class="text-center" style="padding: 2rem; color: var(--text-muted); display: none;">
+                No incoming requests right now.
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent My Donations -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">🎁 Your Recent Donations</span>
+              <a href="donations.html" class="text-xs font-semibold">View All →</a>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <div class="table-responsive">
+                <table class="custom-table" id="table-recent-donations">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Category</th>
+                      <th>Qty/Amount</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-donations-body">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+              <div id="donations-empty" class="text-center" style="padding: 2rem; color: var(--text-muted); display: none;">
+                You haven't posted any donations yet. Click <strong>Donate Now</strong> to start!
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Available Requests Near You -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📍 Urgent Requests Near You From Donees</span>
+            <a href="requests.html?tab=available" class="text-xs font-semibold">See All Community Needs →</a>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Item Needed</th>
+                    <th>Requested By</th>
+                    <th>Quantity</th>
+                    <th>Location</th>
+                    <th>Urgency</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="nearby-requests-body">
+                  <!-- Injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+            <div id="nearby-empty" class="text-center" style="padding: 2rem; color: var(--text-muted); display: none;">
+              No community requests posted at the moment.
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = checkAuth(['donor']);
+      if (!user) return;
+
+      renderAppChrome('dashboard');
+
+      // Setup Notification bell toggle
+      const notifBell = document.getElementById('notif-bell-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', () => notifDropdown.classList.remove('show'));
+
+      // Calculate stats
+      const donations = getData(STORAGE_KEYS.DONATIONS, []);
+      const myDonations = donations.filter(d => d.donorId === user.id);
+
+      const total = myDonations.length;
+      const pending = myDonations.filter(d => d.status === 'Pending').length;
+      const accepted = myDonations.filter(d => d.status === 'Accepted').length;
+      const completed = myDonations.filter(d => d.status === 'Completed').length;
+
+      document.getElementById('stat-total-donations').textContent = total;
+      document.getElementById('stat-pending-donations').textContent = pending;
+      document.getElementById('stat-accepted-donations').textContent = accepted;
+      document.getElementById('stat-completed-donations').textContent = completed;
+
+      // Render Recent My Donations
+      const donationsBody = document.getElementById('recent-donations-body');
+      const donationsEmpty = document.getElementById('donations-empty');
+      if (myDonations.length === 0) {
+        donationsEmpty.style.display = 'block';
+      } else {
+        donationsBody.innerHTML = myDonations.slice(0, 5).map(d => `
+          <tr>
+            <td style="font-weight: 600;">${d.itemName}</td>
+            <td>${getCategoryIcon(d.category)} ${d.category}</td>
+            <td>${d.quantity}</td>
+            <td>${getStatusBadge(d.status)}</td>
+            <td>
+              <a href="donation-details.html?id=${d.id}" class="btn btn-secondary btn-sm">View</a>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Render Incoming Requests
+      const incomingRequests = myDonations.filter(d => d.status === 'Requested' && d.doneeId);
+      const incomingBody = document.getElementById('incoming-requests-body');
+      const incomingEmpty = document.getElementById('incoming-empty');
+
+      if (incomingRequests.length === 0) {
+        incomingEmpty.style.display = 'block';
+      } else {
+        incomingBody.innerHTML = incomingRequests.slice(0, 5).map(r => `
+          <tr>
+            <td style="font-weight: 600;">${r.doneeName || 'Recipient'}</td>
+            <td>${r.itemName}</td>
+            <td>${r.requestDetails ? r.requestDetails.quantityRequested : r.quantity}</td>
+            <td>${getStatusBadge(r.status)}</td>
+            <td>
+              <div class="flex gap-1">
+                <button class="btn btn-success btn-sm" onclick="acceptReq('${r.id}')">Accept</button>
+                <a href="chat.html?userId=${r.doneeId}" class="btn btn-secondary btn-sm">Chat</a>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Render Urgent Community Requests from Donees
+      const requests = getData(STORAGE_KEYS.REQUESTS, []);
+      const activeRequests = requests.filter(r => r.status === 'Pending');
+      const nearbyBody = document.getElementById('nearby-requests-body');
+      const nearbyEmpty = document.getElementById('nearby-empty');
+
+      if (activeRequests.length === 0) {
+        nearbyEmpty.style.display = 'block';
+      } else {
+        nearbyBody.innerHTML = activeRequests.slice(0, 5).map(req => `
+          <tr>
+            <td style="font-weight: 600;">${getCategoryIcon(req.itemType)} ${req.itemName}</td>
+            <td>${req.doneeName}</td>
+            <td>${req.quantityRequired}</td>
+            <td>📍 ${req.location}</td>
+            <td><span class="badge badge-urgency-${req.urgency.toLowerCase()}">${req.urgency}</span></td>
+            <td>
+              <div class="flex gap-1">
+                <a href="donate.html?prefillItem=${encodeURIComponent(req.itemName)}&prefillCat=${req.itemType}&prefillReqId=${req.id}" class="btn btn-primary btn-sm">Donate This</a>
+                <a href="chat.html?userId=${req.doneeId}" class="btn btn-secondary btn-sm">Chat</a>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+    });
+
+    function acceptReq(donationId) {
+      const res = acceptIncomingRequest(donationId);
+      if (res.success) {
+        showToast(res.message, 'success');
+        setTimeout(() => location.reload(), 800);
+      }
+    }
+  </script>
+</body>
+</html>

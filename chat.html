@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat - Donation Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-brand">
+          <div class="sidebar-brand-icon">🤝</div>
+          <span>DonationCare</span>
+        </a>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+          <img class="current-user-avatar" src="" alt="User Avatar">
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name current-user-name">Loading...</div>
+          <div class="current-user-role badge badge-role-donor">ROLE</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+
+      <div class="sidebar-footer">
+        <a href="javascript:void(0)" onclick="logoutUser()" class="nav-item" style="color: var(--danger);">
+          <span class="nav-item-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle-btn" title="Toggle Sidebar">☰</button>
+          <div class="page-heading">
+            <h1>Direct Messages & Chat</h1>
+            <p>Coordinate donation handovers, logistics, and queries securely</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button class="topbar-action-btn theme-toggle-btn" title="Switch Theme">🌙</button>
+
+          <div style="position: relative;">
+            <button class="topbar-action-btn" id="notif-bell-btn" title="Notifications">
+              <span>🔔</span>
+              <span class="notification-count hidden">0</span>
+            </button>
+            <div class="dropdown-menu" id="notif-dropdown">
+              <div class="dropdown-header">
+                <span>Notifications</span>
+                <a href="javascript:void(0)" onclick="markAllNotificationsAsRead()" class="text-xs" style="color: var(--primary);">Mark all read</a>
+              </div>
+              <div class="dropdown-list" id="notif-dropdown-list"></div>
+              <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+                <a href="notifications.html" class="text-xs font-semibold">View All Notifications →</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="avatar-preview" style="width: 38px; height: 38px; border-width: 2px;">
+            <img class="current-user-avatar" src="" alt="Avatar">
+          </div>
+        </div>
+      </header>
+
+      <main class="app-content" style="padding: 1.25rem;">
+
+        <div class="chat-container">
+          <!-- Left Panel: Users & Conversations -->
+          <div class="chat-sidebar">
+            <div class="chat-sidebar-header">
+              <input type="text" id="chat-user-search" class="chat-search-input" placeholder="Search people or messages...">
+            </div>
+
+            <div class="chat-users-list" id="chat-conversation-list">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Right Panel: Chat Active Thread Window -->
+          <div class="chat-main" id="chat-window-pane">
+            <div class="chat-header" id="active-chat-header">
+              <div class="flex items-center gap-3">
+                <div class="avatar-preview" style="width: 42px; height: 42px; position: relative;">
+                  <img id="active-chat-avatar" src="" alt="User">
+                  <div class="user-status-dot status-online" id="active-chat-status-dot"></div>
+                </div>
+                <div>
+                  <div id="active-chat-name" style="font-weight: 700; font-size: 1rem; color: var(--text-main);">Select Conversation</div>
+                  <div id="active-chat-sub" class="text-xs text-muted">Active Now • Platform Member</div>
+                </div>
+              </div>
+
+              <div class="flex gap-2">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-clear-chat" title="Clear All Messages">
+                  🧹 Clear Chat
+                </button>
+              </div>
+            </div>
+
+            <!-- Messages Area -->
+            <div class="chat-messages-area" id="chat-messages-box">
+              <div style="margin: auto; text-align: center; color: var(--text-muted);">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">💬</div>
+                <div style="font-weight: 600;">Choose a contact to start messaging</div>
+                <div class="text-xs">Coordinate delivery timings, addresses, and confirmation</div>
+              </div>
+            </div>
+
+            <!-- Quick Reply Chips -->
+            <div style="padding: 0.4rem 1rem; background-color: var(--bg-surface); border-top: 1px solid var(--border-color); display: flex; gap: 0.5rem; overflow-x: auto;">
+              <button class="search-chip" onclick="quickSend('Is this donation item still available?')">Is it available?</button>
+              <button class="search-chip" onclick="quickSend('When can I pick up the items?')">Pickup timing?</button>
+              <button class="search-chip" onclick="quickSend('Thank you so much for your generosity!')">Thank you!</button>
+              <button class="search-chip" onclick="quickSend('I have arrived at the location.')">Arrived at location</button>
+            </div>
+
+            <!-- Chat Footer Input -->
+            <div class="chat-footer">
+              <input type="text" id="chat-message-input" class="chat-input" placeholder="Type your message here... (Press Enter to send)" autocomplete="off">
+              <button type="button" class="btn btn-primary" id="btn-send-message" style="border-radius: var(--radius-full); padding: 0.65rem 1.4rem;">
+                Send 🚀
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    let activeChatRecipientId = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = checkAuth();
+      if (!user) return;
+
+      renderAppChrome('chat');
+
+      // Notification toggle
+      const notifBell = document.getElementById('notif-bell-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', () => notifDropdown.classList.remove('show'));
+
+      // Check URL parameters for direct chat initiation (e.g. chat.html?userId=...)
+      const urlParams = new URLSearchParams(window.location.search);
+      const targetUserId = urlParams.get('userId');
+
+      renderConversationList();
+
+      if (targetUserId) {
+        selectChatUser(targetUserId);
+      } else {
+        // Auto-select first conversation if available
+        const users = getData(STORAGE_KEYS.USERS, []).filter(u => u.id !== user.id);
+        if (users.length > 0) {
+          selectChatUser(users[0].id);
+        }
+      }
+
+      // Search users filter
+      document.getElementById('chat-user-search').addEventListener('input', renderConversationList);
+
+      // Send Message Listeners
+      const msgInput = document.getElementById('chat-message-input');
+      const sendBtn = document.getElementById('btn-send-message');
+
+      sendBtn.addEventListener('click', handleSendMessage);
+      msgInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleSendMessage();
+      });
+
+      // Clear Conversation
+      document.getElementById('btn-clear-chat').addEventListener('click', () => {
+        if (!activeChatRecipientId) return;
+        if (confirm('Clear all messages in this conversation?')) {
+          const chats = getData(STORAGE_KEYS.CHATS, []);
+          const conv = chats.find(c => (c.user1Id === user.id && c.user2Id === activeChatRecipientId) || (c.user1Id === activeChatRecipientId && c.user2Id === user.id));
+          if (conv) {
+            clearChatConversation(conv.id);
+            renderChatMessages();
+            renderConversationList();
+            showToast('Conversation cleared.', 'info');
+          }
+        }
+      });
+    });
+
+    function quickSend(text) {
+      document.getElementById('chat-message-input').value = text;
+      handleSendMessage();
+    }
+
+    function handleSendMessage() {
+      const input = document.getElementById('chat-message-input');
+      const text = input.value.trim();
+      const currentUser = getCurrentUser();
+
+      if (!text || !activeChatRecipientId) return;
+
+      sendChatMessage(currentUser.id, activeChatRecipientId, text);
+      input.value = '';
+      renderChatMessages();
+      renderConversationList();
+    }
+
+    function selectChatUser(userId) {
+      activeChatRecipientId = userId;
+      const users = getData(STORAGE_KEYS.USERS, []);
+      const targetUser = users.find(u => u.id === userId);
+
+      if (targetUser) {
+        document.getElementById('active-chat-name').textContent = targetUser.name;
+        document.getElementById('active-chat-sub').textContent = `${targetUser.role.toUpperCase()} • 📍 ${targetUser.city || 'Verified User'}`;
+        document.getElementById('active-chat-avatar').src = targetUser.avatar || DEFAULT_AVATARS[0];
+      }
+
+      renderConversationList();
+      renderChatMessages();
+    }
+
+    function renderConversationList() {
+      const currentUser = getCurrentUser();
+      const allUsers = getData(STORAGE_KEYS.USERS, []).filter(u => u.id !== currentUser.id);
+      const chats = getData(STORAGE_KEYS.CHATS, []);
+      const q = document.getElementById('chat-user-search').value.trim().toLowerCase();
+
+      const listContainer = document.getElementById('chat-conversation-list');
+
+      const filtered = allUsers.filter(u => {
+        if (q && !u.name.toLowerCase().includes(q) && !u.role.toLowerCase().includes(q)) return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        listContainer.innerHTML = '<div style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">No contacts found.</div>';
+        return;
+      }
+
+      listContainer.innerHTML = filtered.map(u => {
+        const conv = chats.find(c => (c.user1Id === currentUser.id && c.user2Id === u.id) || (c.user1Id === u.id && c.user2Id === currentUser.id));
+        const lastMsg = conv && conv.messages.length > 0 ? conv.messages[conv.messages.length - 1] : null;
+        const isActive = u.id === activeChatRecipientId;
+
+        return `
+          <div class="chat-user-item ${isActive ? 'active' : ''}" onclick="selectChatUser('${u.id}')">
+            <div class="avatar-preview" style="width: 44px; height: 44px; position: relative; flex-shrink: 0;">
+              <img src="${u.avatar || DEFAULT_AVATARS[0]}" alt="${u.name}">
+              <div class="user-status-dot status-online"></div>
+            </div>
+            <div class="chat-user-details">
+              <div class="chat-user-name">
+                <span>${u.name}</span>
+                <span class="chat-user-time">${lastMsg ? new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+              </div>
+              <div class="chat-user-snippet">
+                ${lastMsg ? lastMsg.text : `<span class="badge badge-role-${u.role}" style="font-size: 0.65rem;">${u.role}</span>`}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderChatMessages() {
+      const currentUser = getCurrentUser();
+      const messagesBox = document.getElementById('chat-messages-box');
+
+      if (!activeChatRecipientId) {
+        messagesBox.innerHTML = '<div style="margin: auto; text-align: center; color: var(--text-muted);">Select a user to chat.</div>';
+        return;
+      }
+
+      const chats = getData(STORAGE_KEYS.CHATS, []);
+      const conv = chats.find(c => (c.user1Id === currentUser.id && c.user2Id === activeChatRecipientId) || (c.user1Id === activeChatRecipientId && c.user2Id === currentUser.id));
+
+      if (!conv || conv.messages.length === 0) {
+        messagesBox.innerHTML = `
+          <div style="margin: auto; text-align: center; color: var(--text-muted); padding: 2rem;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">👋</div>
+            <div style="font-weight: 600;">Say hello!</div>
+            <div class="text-xs">Start coordinating handover details or ask about items.</div>
+          </div>
+        `;
+        return;
+      }
+
+      messagesBox.innerHTML = conv.messages.map(m => {
+        const isSent = m.senderId === currentUser.id;
+        const timeStr = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const dateStr = formatDate(m.timestamp);
+
+        return `
+          <div class="chat-message-row ${isSent ? 'sent' : 'received'}">
+            <div class="message-bubble">
+              <div>${m.text}</div>
+              <div class="message-meta">
+                <span>${dateStr} ${timeStr}</span>
+                ${isSent ? '<span>✓✓</span>' : ''}
+                <button type="button" onclick="handleDeleteMsg('${conv.id}', '${m.id}')" title="Delete message" style="background: none; border: none; cursor: pointer; color: inherit; opacity: 0.7; margin-left: 4px;">✕</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Auto scroll to bottom
+      messagesBox.scrollTop = messagesBox.scrollHeight;
+    }
+
+    function handleDeleteMsg(convId, msgId) {
+      if (confirm('Delete this message?')) {
+        deleteChatMessage(convId, msgId);
+        renderChatMessages();
+        renderConversationList();
+      }
+    }
+  </script>
+</body>
+</html>
