@@ -62,12 +62,12 @@
         <div class="form-row">
           <div class="form-group">
             <label class="form-label" for="reg-name">Full Name <span class="required">*</span></label>
-            <input type="text" id="reg-name" class="form-control" placeholder="e.g. Jane Doe" required>
+            <input type="text" id="reg-name" name="fullName" class="form-control" placeholder="e.g. Jane Doe" required>
             <div id="err-name" class="form-error hidden">Please enter your full name.</div>
           </div>
           <div class="form-group">
             <label class="form-label" for="reg-email">Email Address <span class="required">*</span></label>
-            <input type="email" id="reg-email" class="form-control" placeholder="name@domain.com" required autocomplete="email">
+            <input type="email" id="reg-email" name="email" class="form-control" placeholder="name@domain.com" required autocomplete="email">
             <div id="err-email" class="form-error hidden">Please enter a valid email address.</div>
           </div>
         </div>
@@ -76,12 +76,12 @@
         <div class="form-row">
           <div class="form-group">
             <label class="form-label" for="reg-phone">Phone Number <span class="required">*</span></label>
-            <input type="tel" id="reg-phone" class="form-control" placeholder="e.g. 9876543210" required>
+            <input type="tel" id="reg-phone" name="phone" class="form-control" placeholder="e.g. 9876543210" required>
             <div id="err-phone" class="form-error hidden">Please enter a valid phone number.</div>
           </div>
           <div class="form-group">
             <label class="form-label" for="reg-city">City <span class="required">*</span></label>
-            <input type="text" id="reg-city" class="form-control" placeholder="e.g. Chennai, Bangalore, Mumbai" required>
+            <input type="text" id="reg-city" name="city" class="form-control" placeholder="e.g. Chennai, Bangalore, Mumbai" required>
             <div id="err-city" class="form-error hidden">Please enter your city.</div>
           </div>
         </div>
@@ -89,19 +89,19 @@
         <!-- Address -->
         <div class="form-group">
           <label class="form-label" for="reg-address">Full Address</label>
-          <input type="text" id="reg-address" class="form-control" placeholder="Street name, landmark, area">
+          <input type="text" id="reg-address" name="address" class="form-control" placeholder="Street name, landmark, area">
         </div>
 
         <!-- Password and Confirm Password -->
         <div class="form-row">
           <div class="form-group">
             <label class="form-label" for="reg-password">Password (min 6 chars) <span class="required">*</span></label>
-            <input type="password" id="reg-password" class="form-control" placeholder="••••••••" required autocomplete="new-password">
+            <input type="password" id="reg-password" name="password" class="form-control" placeholder="••••••••" required autocomplete="new-password">
             <div id="err-password" class="form-error hidden">Password must be at least 6 characters.</div>
           </div>
           <div class="form-group">
             <label class="form-label" for="reg-confirm-password">Confirm Password <span class="required">*</span></label>
-            <input type="password" id="reg-confirm-password" class="form-control" placeholder="••••••••" required autocomplete="new-password">
+            <input type="password" id="reg-confirm-password" name="confirmPassword" class="form-control" placeholder="••••••••" required autocomplete="new-password">
             <div id="err-confirm-password" class="form-error hidden">Passwords do not match.</div>
           </div>
         </div>
@@ -142,6 +142,8 @@
       </div>
     </div>
   </div>
+
+  <script type="module" src="js/firebase-service.js"></script>
 
   <script src="js/script.js"></script>
   <script>
@@ -195,15 +197,23 @@
         const globalErrText = document.getElementById('global-reg-error-text');
 
         let isValid = true;
-        const name = document.getElementById('reg-name').value.trim();
-        const email = document.getElementById('reg-email').value.trim();
-        const phone = document.getElementById('reg-phone').value.trim();
-        const city = document.getElementById('reg-city').value.trim();
-        const address = document.getElementById('reg-address').value.trim();
-        const password = document.getElementById('reg-password').value;
-        const confirmPassword = document.getElementById('reg-confirm-password').value;
-        const selectedRole = document.querySelector('input[name="accountType"]:checked').value;
-        const avatar = regAvatarInput.value;
+        const nameInput = document.getElementById('reg-name') || document.getElementById('fullName');
+        const emailInput = document.getElementById('reg-email') || document.getElementById('email');
+        const phoneInput = document.getElementById('reg-phone') || document.getElementById('phone');
+        const cityInput = document.getElementById('reg-city') || document.getElementById('city');
+        const addressInput = document.getElementById('reg-address') || document.getElementById('address');
+        const passwordInput = document.getElementById('reg-password') || document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('reg-confirm-password') || document.getElementById('confirmPassword');
+
+        const name = nameInput ? nameInput.value.trim() : '';
+        const email = emailInput ? emailInput.value.trim() : '';
+        const phone = phoneInput ? phoneInput.value.trim() : '';
+        const city = cityInput ? cityInput.value.trim() : '';
+        const address = addressInput ? addressInput.value.trim() : '';
+        const password = passwordInput ? passwordInput.value : '';
+        const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : '';
+        const selectedRole = document.querySelector('input[name="accountType"]:checked')?.value || 'donor';
+        const avatar = regAvatarInput ? regAvatarInput.value : '';
 
         if (!name) {
           document.getElementById('err-name').classList.remove('hidden');

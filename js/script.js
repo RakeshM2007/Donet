@@ -1,6 +1,6 @@
 /**
  * DONATION MANAGEMENT SYSTEM - CORE SCRIPT
- * Complete Frontend Logic using localStorage
+ * Complete Frontend Logic using localStorage and Cloud Firestore dual-sync
  */
 
 // =============================================================================
@@ -77,12 +77,15 @@ function deleteData(key, id) {
   const items = getData(key, []);
   const filtered = items.filter(item => item.id !== id);
   saveData(key, filtered);
+  if (key === STORAGE_KEYS.DONATIONS) syncFirebase('donations', 'delete', id);
+  if (key === STORAGE_KEYS.REQUESTS) syncFirebase('requests', 'delete', id);
   return filtered;
 }
 
 function getCurrentUser() {
   return getData(STORAGE_KEYS.CURRENT_USER, null);
 }
+window.getCurrentUser = getCurrentUser;
 
 function setCurrentUser(user) {
   saveData(STORAGE_KEYS.CURRENT_USER, user);
@@ -94,6 +97,31 @@ function clearCurrentUser() {
 
 function generateId(prefix = 'ITEM') {
   return `${prefix}-${Math.floor(1000 + Math.random() * 9000)}`;
+}
+
+// Global Firebase dual-sync helper
+function syncFirebase(collectionName, action, docData, fields = {}) {
+  if (window.DMS_FIREBASE && typeof window.DMS_FIREBASE.isAvailable === 'function' && window.DMS_FIREBASE.isAvailable()) {
+    try {
+      if (collectionName === 'users') {
+        if (action === 'save') window.DMS_FIREBASE.saveUser(docData);
+      } else if (collectionName === 'donations') {
+        if (action === 'save') window.DMS_FIREBASE.saveDonation(docData);
+        else if (action === 'update') window.DMS_FIREBASE.updateDonation(docData, fields);
+        else if (action === 'delete') window.DMS_FIREBASE.deleteDonation(docData);
+      } else if (collectionName === 'requests') {
+        if (action === 'save') window.DMS_FIREBASE.saveRequest(docData);
+        else if (action === 'update') window.DMS_FIREBASE.updateRequest(docData, fields);
+        else if (action === 'delete') window.DMS_FIREBASE.deleteRequest(docData);
+      } else if (collectionName === 'chats') {
+        if (action === 'save') window.DMS_FIREBASE.saveChat(docData);
+      } else if (collectionName === 'notifications') {
+        if (action === 'save') window.DMS_FIREBASE.saveNotification(docData);
+      }
+    } catch (e) {
+      console.warn('Firebase dual-sync error:', e);
+    }
+  }
 }
 
 // =============================================================================
@@ -276,6 +304,7 @@ function registerUser(userData) {
 
   users.push(newUser);
   saveData(STORAGE_KEYS.USERS, users);
+  syncFirebase('users', 'save', newUser);
 
   return { success: true, message: 'Registration successful! Please login to continue.', user: newUser };
 }
@@ -449,6 +478,7 @@ function addNotification(recipientId, title, message, link = '#', type = 'info')
   };
   notifications.unshift(newNotif);
   saveData(STORAGE_KEYS.NOTIFICATIONS, notifications);
+  syncFirebase('notifications', 'save', newNotif);
   
   const currentUser = getCurrentUser();
   if (currentUser && currentUser.id === recipientId) {
@@ -590,6 +620,7 @@ function createDonation(donationData) {
 
   donations.unshift(newDonation);
   saveData(STORAGE_KEYS.DONATIONS, donations);
+  syncFirebase('donations', 'save', newDonation);
 
   // Notify donor
   addNotification(user.id, 'Donation Created', `Your donation for "${newDonation.itemName}" is live and ready to help!`, 'donations.html', 'success');
@@ -620,6 +651,7 @@ function updateDonation(donationId, updatedFields) {
 
   Object.assign(item, updatedFields);
   saveData(STORAGE_KEYS.DONATIONS, donations);
+  syncFirebase('donations', 'update', donationId, updatedFields);
   return { success: true, message: 'Donation updated successfully.', donation: item };
 }
 
@@ -630,6 +662,7 @@ function cancelDonation(donationId) {
 
   item.status = 'Cancelled';
   saveData(STORAGE_KEYS.DONATIONS, donations);
+  syncFirebase('donations', 'update', donationId, { status: 'Cancelled' });
 
   if (item.doneeId) {
     addNotification(item.doneeId, 'Donation Cancelled', `The donation for "${item.itemName}" was cancelled by the donor.`, 'requests.html', 'warning');
@@ -676,6 +709,7 @@ function createDonationRequest(reqData) {
 
   requests.unshift(newReq);
   saveData(STORAGE_KEYS.REQUESTS, requests);
+  syncFirebase('requests', 'save', newReq);
 
   // Notify donee
   addNotification(user.id, 'Request Created', `Your request for "${newReq.itemName}" has been registered.`, 'requests.html', 'success');
@@ -717,6 +751,7 @@ function requestAvailableItem(donationId, details = {}) {
   };
 
   saveData(STORAGE_KEYS.DONATIONS, donations);
+  syncFirebase('donations', 'update', donation.id, donation);
 
   // Also create a linked request record
   const requests = getData(STORAGE_KEYS.REQUESTS, []);
@@ -743,6 +778,7 @@ function requestAvailableItem(donationId, details = {}) {
   };
   requests.unshift(newReq);
   saveData(STORAGE_KEYS.REQUESTS, requests);
+  syncFirebase('requests', 'save', newReq);
 
   // Send notification to donor
   addNotification(
@@ -771,6 +807,7 @@ function acceptIncomingRequest(donationId) {
 
   item.status = 'Accepted';
   saveData(STORAGE_KEYS.DONATIONS, donations);
+  syncFirebase('donations', 'update', donationId, { status: 'Accepted' });
 
   // Update request item if exists
   const requests = getData(STORAGE_KEYS.REQUESTS, []);
@@ -780,6 +817,7 @@ function acceptIncomingRequest(donationId) {
     req.donorId = user.id;
     req.donorName = user.name;
     saveData(STORAGE_KEYS.REQUESTS, requests);
+    syncFirebase('requests', 'update', req.id, { status: 'Accepted', donorId: user.id, donorName: user.name });
   }
 
   // Notify Donee
@@ -817,6 +855,7 @@ function rejectIncomingRequest(donationId, reason = '') {
   item.doneeName = null;
   item.requestDetails = null;
   saveData(STORAGE_KEYS.DONATIONS, donations);
+  syncFirebase('donations', 'update', donationId, { status: 'Pending', doneeId: null, doneeName: null, requestDetails: null });
 
   // Update request record
   const requests = getData(STORAGE_KEYS.REQUESTS, []);
@@ -824,6 +863,7 @@ function rejectIncomingRequest(donationId, reason = '') {
   if (req) {
     req.status = 'Rejected';
     saveData(STORAGE_KEYS.REQUESTS, requests);
+    syncFirebase('requests', 'update', req.id, { status: 'Rejected' });
   }
 
   if (prevDoneeId) {
@@ -848,6 +888,7 @@ function completeDonation(donationId) {
   item.status = 'Completed';
   item.completedAt = new Date().toISOString();
   saveData(STORAGE_KEYS.DONATIONS, donations);
+  syncFirebase('donations', 'update', donationId, { status: 'Completed', completedAt: item.completedAt });
 
   // Update request record if matched
   const requests = getData(STORAGE_KEYS.REQUESTS, []);
@@ -855,6 +896,7 @@ function completeDonation(donationId) {
   if (req) {
     req.status = 'Completed';
     saveData(STORAGE_KEYS.REQUESTS, requests);
+    syncFirebase('requests', 'update', req.id, { status: 'Completed' });
   }
 
   // Notify both parties
@@ -1028,6 +1070,7 @@ function sendChatMessage(senderId, recipientId, text) {
   conv.messages.push(newMsg);
   conv.lastUpdated = new Date().toISOString();
   saveData(STORAGE_KEYS.CHATS, chats);
+  syncFirebase('chats', 'save', conv);
 
   // Play audio chime
   playNotificationSound();
@@ -1079,6 +1122,7 @@ function simulateAutoReply(botSenderId, humanRecipientId, userMessageText) {
   conv.messages.push(replyMsg);
   conv.lastUpdated = new Date().toISOString();
   saveData(STORAGE_KEYS.CHATS, chats);
+  syncFirebase('chats', 'save', conv);
 
   // Trigger UI update if on chat page
   if (typeof renderChatMessages === 'function') {
@@ -1119,8 +1163,35 @@ function clearChatConversation(convId) {
 }
 
 // =============================================================================
-// 12. RUN INITIAL CHECKS ON LOAD
+// 12. RUN INITIAL CHECKS & REAL-TIME FIRESTORE EVENT LISTENERS
 // =============================================================================
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
+});
+
+// Real-time Firestore sync listeners
+window.addEventListener('dms:donations-updated', () => {
+  if (typeof renderDonationsTable === 'function') renderDonationsTable();
+  if (typeof renderCatalog === 'function') renderCatalog();
+  if (typeof performSearch === 'function') performSearch();
+  if (typeof loadAdminDonations === 'function') loadAdminDonations();
+  if (typeof loadAdminStatistics === 'function') loadAdminStatistics();
+});
+
+window.addEventListener('dms:requests-updated', () => {
+  if (typeof renderIncomingRequests === 'function') renderIncomingRequests();
+  if (typeof renderAvailableRequests === 'function') renderAvailableRequests();
+  if (typeof renderDoneeRequests === 'function') renderDoneeRequests();
+  if (typeof loadAdminRequests === 'function') loadAdminRequests();
+  if (typeof loadAdminStatistics === 'function') loadAdminStatistics();
+});
+
+window.addEventListener('dms:chats-updated', () => {
+  if (typeof renderChatMessages === 'function') renderChatMessages();
+  if (typeof renderConversationList === 'function') renderConversationList();
+});
+
+window.addEventListener('dms:notifications-updated', () => {
+  if (typeof updateNotificationBadge === 'function') updateNotificationBadge();
+  if (typeof renderNotifications === 'function') renderNotifications();
 });
